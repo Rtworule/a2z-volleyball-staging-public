@@ -1,0 +1,257 @@
+:root {
+  color-scheme: light;
+  --ink: #17202a;
+  --muted: #65717f;
+  --line: #d8dee6;
+  --panel: #ffffff;
+  --page: #f5f7fa;
+  --open: #0f7b55;
+  --open-bg: #e6f5ef;
+  --booked: #9f2f2f;
+  --booked-bg: #f9e5e4;
+  --accent: #2457c5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.topbar {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin: 0 auto 20px;
+  max-width: 1180px;
+}
+
+.brand {
+  display: grid;
+  gap: 4px;
+}
+
+.brand__name {
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.brand__meta {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.toolbar {
+  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+input,
+select {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  font: inherit;
+  min-height: 40px;
+  padding: 8px 10px;
+}
+
+.legend {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 auto 16px;
+  max-width: 1180px;
+}
+
+.legend__item {
+  align-items: center;
+  color: var(--muted);
+  display: inline-flex;
+  font-size: 0.9rem;
+  gap: 8px;
+}
+
+.legend__swatch {
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  height: 12px;
+  width: 12px;
+}
+
+.legend__swatch.is-open {
+  background: var(--open-bg);
+  color: var(--open);
+}
+
+.legend__swatch.is-booked {
+  background: var(--booked-bg);
+  color: var(--booked);
+}
+
+.calendar-wrap {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 18px 48px rgba(23, 32, 42, 0.08);
+  margin: 0 auto;
+  max-width: 1180px;
+  overflow: auto;
+}
+
+.calendar {
+  display: grid;
+  grid-template-columns: 140px repeat(var(--slot-count), minmax(86px, 1fr));
+  min-width: 980px;
+}
+
+.calendar__corner,
+.calendar__time,
+.calendar__resource {
+  background: #f9fafc;
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  min-height: 54px;
+  padding: 10px;
+}
+
+.calendar__corner,
+.calendar__time {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  font-size: 0.78rem;
+  font-weight: 800;
+  justify-content: center;
+  text-transform: uppercase;
+}
+
+.calendar__resource {
+  display: grid;
+  gap: 3px;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+
+.calendar__resource span {
+  font-weight: 800;
+}
+
+.calendar__resource small {
+  color: var(--muted);
+}
+
+.calendar__slot {
+  align-items: center;
+  background: #fff;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  color: inherit;
+  cursor: pointer;
+  display: grid;
+  gap: 2px;
+  min-height: 58px;
+  padding: 8px;
+}
+
+.calendar__slot span {
+  font-weight: 800;
+}
+
+.calendar__slot small {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.calendar__slot.is-open {
+  background: var(--open-bg);
+  color: var(--open);
+}
+
+.calendar__slot.is-booked {
+  background: var(--booked-bg);
+  color: var(--booked);
+  cursor: not-allowed;
+}
+
+.summary {
+  color: var(--muted);
+  font-weight: 700;
+  margin: 14px auto 0;
+  max-width: 1180px;
+}
+
+.hours {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px auto 0;
+  max-width: 1180px;
+}
+
+.hours span {
+  background: #e9eef8;
+  border-radius: 999px;
+  color: #274166;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 7px 10px;
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    padding: 16px;
+  }
+
+  .topbar {
+    align-items: stretch;
+    display: grid;
+  }
+
+  .toolbar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .calendar {
+    grid-template-columns: 118px repeat(var(--slot-count), 78px);
+    min-width: 860px;
+  }
+
+  .calendar__corner,
+  .calendar__time,
+  .calendar__resource,
+  .calendar__slot {
+    min-height: 52px;
+    padding: 8px;
+  }
+}

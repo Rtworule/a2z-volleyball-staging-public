@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>A to Z Volleyball Center Admin Settings</title>
+    <link rel="stylesheet" href="./src/admin-settings.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <span>A to Z Volleyball Center</span>
+          <h1>Admin settings</h1>
+        </div>
+        <div class="status" data-status>Ready for admin changes.</div>
+      </header>
+
+      <section class="summary-grid" aria-label="Settings summary">
+        <div class="summary-tile">
+          <span>Hours</span>
+          <strong data-summary-open-days></strong>
+        </div>
+        <div class="summary-tile">
+          <span>Closures</span>
+          <strong data-summary-closures></strong>
+        </div>
+        <div class="summary-tile">
+          <span>Fixed reservations</span>
+          <strong data-summary-fixed></strong>
+        </div>
+        <div class="summary-tile">
+          <span>Rates</span>
+          <strong data-summary-rates></strong>
+        </div>
+      </section>
+
+      <section class="dashboard-grid">
+        <div class="main-stack">
+          <section class="panel" aria-labelledby="hours-title">
+            <div class="panel__header">
+              <div>
+                <h2 id="hours-title">Operating hours</h2>
+                <p>Set normal opening windows for each day.</p>
+              </div>
+            </div>
+            <div class="hours-grid" data-hours-grid></div>
+          </section>
+
+          <section class="panel" aria-labelledby="fixed-title">
+            <div class="panel__header">
+              <div>
+                <h2 id="fixed-title">Fixed reservations</h2>
+                <p>Reserve courts or trainer capacity for teams across a date range.</p>
+              </div>
+            </div>
+            <form class="settings-form" data-reservation-form>
+              <div class="form-grid">
+                <label class="is-wide">
+                  <span>Title</span>
+                  <input name="title" value="Fall academy" required>
+                </label>
+                <label>
+                  <span>Resource</span>
+                  <select name="resourceType">
+                    <option value="court">Court</option>
+                    <option value="trainer">Gym trainers</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Court</span>
+                  <select name="courtId" data-court-options>
+                    <option value="">All courts</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Start date</span>
+                  <input type="date" name="startDate" value="2026-09-01" required>
+                </label>
+                <label>
+                  <span>End date</span>
+                  <input type="date" name="endDate" value="2026-11-20" required>
+                </label>
+                <label>
+                  <span>Start time</span>
+                  <input type="time" name="startTime" value="17:00" required>
+                </label>
+                <label>
+                  <span>End time</span>
+                  <input type="time" name="endTime" value="19:00" required>
+                </label>
+                <label>
+                  <span>Trainer capacity</span>
+                  <select name="capacity">
+                    <option value="1">1 trainer</option>
+                    <option value="2">2 trainers</option>
+                  </select>
+                </label>
+              </div>
+              <fieldset class="day-checks">
+                <legend>Days</legend>
+                <label><input type="checkbox" name="daysOfWeek" value="1" checked> Mon</label>
+                <label><input type="checkbox" name="daysOfWeek" value="2"> Tue</label>
+                <label><input type="checkbox" name="daysOfWeek" value="3" checked> Wed</label>
+                <label><input type="checkbox" name="daysOfWeek" value="4"> Thu</label>
+                <label><input type="checkbox" name="daysOfWeek" value="5"> Fri</label>
+                <label><input type="checkbox" name="daysOfWeek" value="6"> Sat</label>
+                <label><input type="checkbox" name="daysOfWeek" value="0"> Sun</label>
+              </fieldset>
+              <button type="submit">Add fixed reservation</button>
+            </form>
+            <ul class="settings-list" data-reservation-list></ul>
+          </section>
+        </div>
+
+        <aside class="side-stack">
+          <section class="panel" aria-labelledby="pricing-title">
+            <div class="panel__header">
+              <div>
+                <h2 id="pricing-title">Pricing</h2>
+                <p>Rates used for court, gym, and season reservations.</p>
+              </div>
+            </div>
+            <form class="settings-form" data-pricing-form>
+              <label>
+                <span>Court hourly rate</span>
+                <input type="number" name="courtHourlyRate" min="0" step="1" required>
+              </label>
+              <label>
+                <span>Trainer hourly rate</span>
+                <input type="number" name="trainerHourlyRate" min="0" step="1" required>
+              </label>
+              <label>
+                <span>Fixed reservation deposit</span>
+                <input type="number" name="fixedReservationDeposit" min="0" step="1" required>
+              </label>
+              <button type="submit">Update pricing</button>
+            </form>
+          </section>
+
+          <section class="panel" aria-labelledby="closure-title">
+            <div class="panel__header">
+              <div>
+                <h2 id="closure-title">Closures</h2>
+                <p>Block holidays, maintenance, or single-court outages.</p>
+              </div>
+            </div>
+            <form class="settings-form" data-closure-form>
+              <label>
+                <span>Reason</span>
+                <input name="reason" value="Maintenance" required>
+              </label>
+              <label>
+                <span>Resource</span>
+                <select name="resourceType">
+                  <option value="all">All resources</option>
+                  <option value="court">Court</option>
+                  <option value="trainer">Gym trainers</option>
+                </select>
+              </label>
+              <label>
+                <span>Court</span>
+                <select name="courtId" data-court-options>
+                  <option value="">All courts</option>
+                </select>
+              </label>
+              <label>
+                <span>Start</span>
+                <input type="datetime-local" name="start" value="2026-07-04T00:00" required>
+              </label>
+              <label>
+                <span>End</span>
+                <input type="datetime-local" name="end" value="2026-07-05T00:00" required>
+              </label>
+              <button type="submit">Add closure</button>
+            </form>
+            <ul class="settings-list" data-closure-list></ul>
+          </section>
+
+          <section class="panel" aria-labelledby="preview-title">
+            <div class="panel__header">
+              <div>
+                <h2 id="preview-title">Scheduler payload</h2>
+                <p>Current settings in the shape used by booking availability logic.</p>
+              </div>
+            </div>
+            <pre class="preview" data-scheduler-preview></pre>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <script type="module" src="./src/admin-settings.js"></script>
+  </body>
+</html>

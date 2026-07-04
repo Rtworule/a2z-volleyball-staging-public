@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="A to Z Volleyball Center court reservations, team scheduling, payments, and admin tools."
+    >
+    <title>A to Z Volleyball Center</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://images.pexels.com">
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module">
+      const isLocalDevHost = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+      const isViteServed = document.querySelector('meta[name="a2z-vite-entry"]');
+
+      if (!isLocalDevHost && !isViteServed) {
+        const appScript = document.createElement("script");
+
+        appScript.type = "module";
+        appScript.src = "/assets/index-BLwIoIaC.js";
+        document.head.append(appScript);
+      }
+    </script>
+    <script>
+      const isLocalDevHost = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+
+      window.setTimeout(() => {
+        if (isLocalDevHost || document.getElementById("app")?.hasChildNodes()) {
+          return;
+        }
+
+        const appScript = document.createElement("script");
+
+        appScript.type = "module";
+        appScript.src = "/assets/staging-app.js";
+        document.head.append(appScript);
+      }, 1200);
+    </script>
+  </body>
+</html>

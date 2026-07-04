@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Access Portal</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="auth-panel" aria-label="Authentication">
+        <div class="brand-strip">
+          <div>
+            <p class="eyebrow">Account Access</p>
+            <h1>Access Portal</h1>
+          </div>
+          <span id="sessionState" class="status-pill">Signed out</span>
+        </div>
+
+        <div class="mode-tabs" role="tablist" aria-label="Authentication mode">
+          <button id="loginTab" class="tab-button is-active" type="button" role="tab" aria-selected="true">Sign in</button>
+          <button id="registerTab" class="tab-button" type="button" role="tab" aria-selected="false">Register</button>
+        </div>
+
+        <form id="loginForm" class="auth-form" novalidate>
+          <div class="field-row">
+            <label for="loginEmail">Email</label>
+            <input id="loginEmail" name="email" type="email" autocomplete="email" placeholder="name@company.com">
+            <p id="loginEmailError" class="field-error"></p>
+          </div>
+
+          <div class="field-row">
+            <label for="loginPassword">Password</label>
+            <div class="password-wrap">
+              <input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="Enter password">
+              <button id="toggleLoginPassword" class="icon-button" type="button" aria-label="Show password" title="Show password">Show</button>
+            </div>
+            <p id="loginPasswordError" class="field-error"></p>
+          </div>
+
+          <div class="inline-options">
+            <label class="checkbox-line" for="rememberMe">
+              <input id="rememberMe" name="rememberMe" type="checkbox">
+              <span>Keep me signed in</span>
+            </label>
+            <button class="link-button" type="button">Reset password</button>
+          </div>
+
+          <button id="loginSubmit" class="primary-button" type="submit">Sign in</button>
+        </form>
+
+        <form id="registerForm" class="auth-form is-hidden" novalidate>
+          <div class="split-fields">
+            <div class="field-row">
+              <label for="firstName">First name</label>
+              <input id="firstName" name="firstName" type="text" autocomplete="given-name" placeholder="Avery">
+              <p id="firstNameError" class="field-error"></p>
+            </div>
+            <div class="field-row">
+              <label for="lastName">Last name</label>
+              <input id="lastName" name="lastName" type="text" autocomplete="family-name" placeholder="Stone">
+              <p id="lastNameError" class="field-error"></p>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <label for="registerEmail">Work email</label>
+            <input id="registerEmail" name="email" type="email" autocomplete="email" placeholder="name@company.com">
+            <p id="registerEmailError" class="field-error"></p>
+          </div>
+
+          <div class="split-fields">
+            <div class="field-row">
+              <label for="role">Requested role</label>
+              <select id="role" name="role">
+                <option value="member">Member</option>
+                <option value="manager">Manager</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <div class="field-row">
+              <label for="team">Team</label>
+              <input id="team" name="team" type="text" placeholder="Operations">
+              <p id="teamError" class="field-error"></p>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <label for="registerPassword">Password</label>
+            <div class="password-wrap">
+              <input id="registerPassword" name="password" type="password" autocomplete="new-password" placeholder="Create password">
+              <button id="toggleRegisterPassword" class="icon-button" type="button" aria-label="Show password" title="Show password">Show</button>
+            </div>
+            <div id="passwordStrength" class="strength-meter" aria-hidden="true"><span></span></div>
+            <p id="registerPasswordError" class="field-error"></p>
+          </div>
+
+          <label class="checkbox-line" for="termsAccepted">
+            <input id="termsAccepted" name="termsAccepted" type="checkbox">
+            <span>I accept the account policy</span>
+          </label>
+          <p id="termsAcceptedError" class="field-error"></p>
+
+          <button id="registerSubmit" class="primary-button" type="submit">Request access</button>
+        </form>
+
+        <div id="formAlert" class="form-alert" role="status" aria-live="polite"></div>
+      </section>
+
+      <aside class="review-panel" aria-label="Approval queue">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Admin Review</p>
+            <h2>Approval queue</h2>
+          </div>
+          <span id="queueCount" class="count-badge">0</span>
+        </div>
+        <div id="approvalList" class="approval-list"></div>
+      </aside>
+    </main>
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>

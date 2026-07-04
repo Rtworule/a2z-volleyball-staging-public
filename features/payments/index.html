@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>A to Z Volleyball Center Booking</title>
+    <link rel="stylesheet" href="./src/booking-flow.css">
+  </head>
+  <body>
+    <main class="booking-shell">
+      <section class="booking-header" aria-label="Booking overview">
+        <div>
+          <p class="eyebrow">A to Z Volleyball Center</p>
+          <h1>Court and trainer booking</h1>
+        </div>
+        <div class="account-panel" aria-label="Account status">
+          <span id="accountStatus" class="status-pill">Approved member</span>
+          <button id="sessionToggle" class="text-button" type="button">Use guest</button>
+          <button id="adminToggle" class="text-button" type="button">Use admin</button>
+        </div>
+      </section>
+
+      <section class="booking-layout">
+        <form class="booking-controls" aria-label="Choose reservation details">
+          <div class="control-grid">
+            <label class="field">
+              <span>Date</span>
+              <input id="bookingDate" type="date" value="2026-06-01">
+            </label>
+
+            <label class="field">
+              <span>Duration</span>
+              <select id="durationHours">
+                <option value="1">1 hour</option>
+                <option value="2">2 hours</option>
+                <option value="3">3 hours</option>
+                <option value="4">4 hours</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Court</span>
+              <select id="courtSelect">
+                <option value="">Auto-assign</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="resource-toggle" role="radiogroup" aria-label="Reservation type">
+            <button class="toggle-button is-active" id="courtMode" type="button" aria-pressed="true">Court</button>
+            <button class="toggle-button" id="trainerMode" type="button" aria-pressed="false">Trainer</button>
+          </div>
+        </form>
+
+        <section class="slot-panel" aria-label="Available slots">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Open Times</p>
+              <h2 id="slotHeading">Select a start time</h2>
+            </div>
+            <span id="availabilitySummary" class="count-pill">0 open</span>
+          </div>
+          <div id="slotGrid" class="slot-grid"></div>
+        </section>
+
+        <aside class="request-panel" aria-label="Reservation request">
+          <div>
+            <p class="eyebrow">Reservation Request</p>
+            <h2 id="requestTitle">No slot selected</h2>
+            <p id="requestMeta" class="muted">Choose an available time to prepare a reservation.</p>
+          </div>
+
+          <div id="bookingStatus" class="booking-status" role="status" aria-live="polite">
+            Ready for selection.
+          </div>
+
+          <button id="reserveButton" class="primary-button" type="button" disabled>Reserve slot</button>
+
+          <div class="my-bookings">
+            <div class="panel-heading compact">
+              <h2>My bookings</h2>
+              <span id="bookingCount" class="count-pill">0</span>
+            </div>
+            <div id="bookingList" class="booking-list"></div>
+          </div>
+
+          <div class="payment-tracking">
+            <div class="panel-heading compact">
+              <h2>Payment tracking</h2>
+              <span id="paymentTotal" class="count-pill">0</span>
+            </div>
+            <div class="payment-summary" aria-label="Payment summary">
+              <span><strong id="paidCount">0</strong> paid</span>
+              <span><strong id="dueCount">0</strong> due</span>
+            </div>
+            <div id="paymentList" class="payment-list"></div>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <script src="./src/booking-flow.js" type="module"></script>
+  </body>
+</html>
