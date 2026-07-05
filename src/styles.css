@@ -2124,3 +2124,10 @@ textarea {
 .narrow-workspace {
   max-width: 460px;
 }
+
+.field-tip {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: 0.75;
+}

@@ -44,3 +44,14 @@ test("schedule view renders a half-hour day grid for members", () => {
 test("private lesson estimates use bracket prices from the portal", () => {
   assert.match(appSource, /state\.bracketPrices\.find\(\(price\) => price\.bracket === state\.lessonBracket\)/);
 });
+
+test("public home data comes from the column-safe facility info RPC", () => {
+  assert.match(appSource, /supabase\.rpc\("public_get_facility_info"\)/);
+  assert.doesNotMatch(appSource, /from\("facility_config"\)/);
+});
+
+test("signup has no parent mentions and redirects email confirmation to the site", () => {
+  assert.doesNotMatch(appSource, /parent or coach/i);
+  assert.match(appSource, /placeholder="coach-name or club-name"/);
+  assert.match(appSource, /emailRedirectTo: window\.location\.origin/);
+});

@@ -1203,7 +1203,8 @@ function renderSignupView() {
           </label>
           <label>
             Username
-            <input data-signup="username" name="username" autocomplete="username" value="${escapeHtml(state.signupForm.username)}" placeholder="team-parent or coach-name">
+            <input data-signup="username" name="username" autocomplete="username" value="${escapeHtml(state.signupForm.username)}" placeholder="coach-name or club-name">
+            <small class="field-tip">Short handle for signing in, e.g. coach-kim or rtb-club.</small>
           </label>
           <label>
             Display name
@@ -1221,8 +1222,8 @@ function renderSignupView() {
         <img src="${TRAINING_IMAGE}" alt="Players training on an indoor volleyball court">
         <div>
           <p class="eyebrow">Approval required</p>
-          <h2>Admins review new accounts before booking access.</h2>
-          <p>After sign-up, your account appears in the admin Users tab as pending.</p>
+          <h2>New accounts are reviewed before booking access.</h2>
+          <p>After sign-up, the front desk approves your account. You will be able to view schedules and reserve courts once it is approved.</p>
         </div>
       </aside>
     </section>
@@ -3142,6 +3143,7 @@ async function signUp(formData) {
       email: state.signupForm.email,
       password: state.signupForm.password,
       options: {
+        emailRedirectTo: window.location.origin,
         data: {
           username: state.signupForm.username,
           display_name: state.signupForm.displayName,
@@ -7191,23 +7193,19 @@ async function loadPublicFacilityInfo() {
     return;
   }
   try {
-    const [configResult, hoursResult] = await Promise.all([
-      supabase.from("facility_config").select("court_count, trainer_capacity, court_hourly_rate, gym_hourly_rate").eq("id", true).maybeSingle(),
-      supabase.from("operating_hours").select("day_of_week, open_time, close_time, is_closed")
-    ]);
-    const config = configResult.data;
-    const hours = hoursResult.data;
-    if (config) {
-      state.settings.courtCount = config.court_count;
-      state.settings.trainerCapacity = config.trainer_capacity;
-      state.settings.pricing.courtHourlyRate = Number(config.court_hourly_rate);
-      state.settings.pricing.gymHourlyRate = Number(config.gym_hourly_rate);
-    }
-    if (hours?.length) {
-      state.settings.operatingHours = Object.fromEntries(hours.map((row) => [
-        row.day_of_week,
-        { open: String(row.open_time).slice(0, 5), close: String(row.close_time).slice(0, 5), closed: Boolean(row.is_closed) }
-      ]));
+    const { data } = await supabase.rpc("public_get_facility_info");
+    if (data) {
+      state.settings.courtCount = data.courtCount ?? state.settings.courtCount;
+      state.settings.trainerCapacity = data.trainerCapacity ?? state.settings.trainerCapacity;
+      state.settings.minBookingMinutes = data.minReservationMinutes ?? state.settings.minBookingMinutes;
+      state.settings.slotIntervalMinutes = data.reservationStepMinutes ?? state.settings.slotIntervalMinutes;
+      state.settings.pricing.courtHourlyRate = Number(data.courtHourlyRate ?? state.settings.pricing.courtHourlyRate);
+      state.settings.pricing.gymHourlyRate = Number(data.gymHourlyRate ?? state.settings.pricing.gymHourlyRate);
+      if (data.operatingHours && Object.keys(data.operatingHours).length) {
+        state.settings.operatingHours = Object.fromEntries(Object.entries(data.operatingHours).map(([day, hours]) => [
+          day, { open: hours.open, close: hours.close, closed: Boolean(hours.closed) }
+        ]));
+      }
     }
   } catch {
     // Public info is cosmetic; never block first paint on it.
