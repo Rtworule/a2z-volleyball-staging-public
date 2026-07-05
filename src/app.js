@@ -145,6 +145,7 @@ const state = {
   lessonBracket: "1-2",
   bracketPrices: [],
   resetPasswordValue: "",
+  editingReservationId: null,
   durationMinutes: 120,
   resourceType: "court",
   selectedCourt: "court-3",
@@ -468,12 +469,17 @@ document.addEventListener("click", (event) => {
     void cancelMyReservation(target.dataset.reservation);
   }
 
-  if (target.dataset.action === "forgot-password") {
-    void sendPasswordReset();
+  if (target.dataset.action === "edit-reservation") {
+    beginEditReservation(target.dataset.reservation);
   }
 
-  if (target.dataset.action === "social-login") {
-    void signInWithProvider(target.dataset.provider);
+  if (target.dataset.action === "cancel-edit") {
+    state.editingReservationId = null;
+    setView("my-bookings");
+  }
+
+  if (target.dataset.action === "forgot-password") {
+    void sendPasswordReset();
   }
 
   if (target.dataset.action === "confirm-password-reset") {
@@ -779,7 +785,11 @@ document.addEventListener("click", (event) => {
   }
 
   if (target.dataset.socialProvider) {
-    state.notice = `${target.dataset.socialProvider} sign-in is disabled for now. Use email and password.`;
+    if (shouldUseLiveAuth()) {
+      void signInWithProvider(target.dataset.socialProvider.toLowerCase());
+      return;
+    }
+    state.notice = `${target.dataset.socialProvider} sign-in is unavailable in local preview. Use email and password.`;
     setView("login");
   }
 });
@@ -1172,12 +1182,7 @@ function renderLoginView() {
         </div>
         ${isLocalPreview ? `<p class="small-copy">Local test logins: member / A2zMember1, pending / A2zPending1, owner / A2zOwner1.</p>` : `<p class="small-copy">Sign in with your email and password, or use Google or Facebook below.</p>`}
         ${shouldUseLiveAuth() ? `
-          <button type="button" class="ghost-action" data-action="forgot-password">Forgot password?</button>
-          <div class="social-login" role="group" aria-label="Sign in with a provider">
-            <span class="small-copy">or continue with</span>
-            <button type="button" class="secondary-action social-btn" data-action="social-login" data-provider="google">Google</button>
-            <button type="button" class="secondary-action social-btn" data-action="social-login" data-provider="facebook">Facebook</button>
-          </div>` : ""}
+          <button type="button" class="ghost-action" data-action="forgot-password">Forgot password?</button>` : ""}
         <button type="button" class="secondary-action" data-view="signup">Create account</button>
       </article>
       <aside class="panel image-panel">
@@ -1226,12 +1231,6 @@ function renderSignupView() {
           </label>
           <button type="submit" class="primary-action full">Request access</button>
         </form>
-        ${shouldUseLiveAuth() ? `
-          <div class="social-login" role="group" aria-label="Sign up with a provider">
-            <span class="small-copy">or sign up with</span>
-            <button type="button" class="secondary-action social-btn" data-action="social-login" data-provider="google">Google</button>
-            <button type="button" class="secondary-action social-btn" data-action="social-login" data-provider="facebook">Facebook</button>
-          </div>` : ""}
         <button type="button" class="secondary-action" data-view="login">Back to log in</button>
       </article>
       <aside class="panel image-panel">
@@ -1371,6 +1370,7 @@ function renderBookingView() {
               </select>
             </label>
           ` : ""}
+          ${state.editingReservationId ? `<p class="small-copy edit-banner">Editing your private lesson — adjust the details and confirm, or <button type="button" class="ghost-action" data-action="cancel-edit">keep it as is</button>.</p>` : ""}
           ${!isAdminSession() && shouldUseLiveAuth() ? renderMemberBookingContextFields() : ""}
           ${isAdminSession() ? `
             <label>
@@ -1397,7 +1397,7 @@ function renderBookingView() {
               </label>
             ` : ""}
           ` : ""}
-          <button type="button" class="primary-action full" data-action="book" ${slotAvailable ? "" : "disabled"}>Confirm reservation</button>
+          <button type="button" class="primary-action full" data-action="book" ${slotAvailable || state.editingReservationId ? "" : "disabled"}>${state.editingReservationId ? "Update reservation" : "Confirm reservation"}</button>
         </form>
         <div class="panel receipt-panel">
           <p class="eyebrow">Reservation summary</p>
@@ -1446,7 +1446,11 @@ function renderMyBookingsView() {
                 </span>
                 <span class="row-actions">
                   <span class="status-pill ${isPaid ? "is-open" : "is-due"}">${isPaid ? "paid" : "invoice due"}</span>
-                  ${isFuture && !isPaid ? `<button type="button" class="ghost-action" data-action="cancel-reservation" data-reservation="${reservation.id}">Cancel</button>` : ""}
+                  ${reservation.lessonPlayerBracket && !isPaid && isEditableWindow(reservation.start) ? `
+                    <button type="button" class="ghost-action" data-action="edit-reservation" data-reservation="${reservation.id}">Edit</button>
+                    <button type="button" class="ghost-action" data-action="cancel-reservation" data-reservation="${reservation.id}">Cancel</button>
+                  ` : reservation.lessonPlayerBracket && isFuture ? `<small class="field-tip">Changes within 36h: contact the front desk</small>`
+                    : isFuture ? `<small class="field-tip">Team practices: contact the front desk to change</small>` : ""}
                 </span>
               </div>
             `;
@@ -3269,6 +3273,22 @@ async function bookSelectedSlot(options = {}) {
       durationMinutes: state.durationMinutes,
       lessonPlayerBracket: context.type === "private" ? state.lessonBracket : null
     };
+    if (state.editingReservationId) {
+      const { error } = await supabase.rpc("member_update_reservation", {
+        p_reservation_id: state.editingReservationId,
+        payload
+      });
+      if (error) {
+        state.notice = readableSupabaseError(error, "Could not update the reservation.");
+        render();
+        return;
+      }
+      state.editingReservationId = null;
+      await loadMemberPortal();
+      state.notice = "Reservation updated.";
+      setView("my-bookings");
+      return;
+    }
     const { error } = await supabase.rpc("member_create_reservation", { payload });
     if (error) {
       state.notice = readableSupabaseError(error, "Could not create the reservation.");
@@ -7356,6 +7376,31 @@ function renderMemberBookingContextFields() {
       </label>
     ` : ""}
   `;
+}
+
+function isEditableWindow(startIso) {
+  return new Date(startIso).getTime() - Date.now() > 36 * 60 * 60 * 1000;
+}
+
+function beginEditReservation(reservationId) {
+  const reservation = state.myReservations.find((entry) => entry.id === reservationId);
+  if (!reservation || !reservation.lessonPlayerBracket || !isEditableWindow(reservation.start)) {
+    return;
+  }
+  const start = new Date(reservation.start);
+  const pad = (value) => String(value).padStart(2, "0");
+  state.date = `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}`;
+  state.time = `${pad(start.getHours())}:${pad(start.getMinutes())}`;
+  state.durationMinutes = Math.round((new Date(reservation.end) - start) / 60000);
+  state.resourceType = reservation.resourceType;
+  state.selectedCourt = reservation.courtNumber ? `court-${reservation.courtNumber}` : "";
+  state.lessonBracket = reservation.lessonPlayerBracket;
+  const privateContext = state.memberContexts.find((context) => context.type === "private");
+  if (privateContext) {
+    state.bookingContextKey = privateContext.key;
+  }
+  state.editingReservationId = reservationId;
+  setView("book");
 }
 
 async function cancelMyReservation(reservationId) {

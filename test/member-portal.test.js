@@ -58,9 +58,9 @@ test("signup has no parent mentions and redirects email confirmation to the site
 
 test("social login uses Supabase OAuth with a site redirect", () => {
   assert.match(appSource, /supabase\.auth\.signInWithOAuth\(\{\s*provider,\s*options: \{ redirectTo: window\.location\.origin \}/);
-  assert.match(appSource, /data-provider="google"/);
-  assert.match(appSource, /data-provider="facebook"/);
+  assert.match(appSource, /signInWithProvider\(target\.dataset\.socialProvider\.toLowerCase\(\)\)/);
   assert.doesNotMatch(appSource, /Social login is disabled/);
+  assert.doesNotMatch(appSource, /data-action="social-login"/);
 });
 
 test("site imagery is local volleyball artwork", () => {
@@ -68,4 +68,10 @@ test("site imagery is local volleyball artwork", () => {
   assert.match(appSource, /const BALL_IMAGE = "\/ball-court\.svg"/);
   assert.match(appSource, /const TRAINING_IMAGE = "\/training\.svg"/);
   assert.doesNotMatch(appSource, /pexels\.com/);
+});
+
+test("private lessons are editable through member_update_reservation with a 36h window", () => {
+  assert.match(appSource, /supabase\.rpc\("member_update_reservation"/);
+  assert.match(appSource, /36 \* 60 \* 60 \* 1000/);
+  assert.match(appSource, /data-action="edit-reservation"/);
 });
