@@ -1931,3 +1931,126 @@ textarea {
     min-height: 96px;
   }
 }
+
+/* --- Member portal & facility map ------------------------------------- */
+.brand-logo {
+  height: 44px;
+  width: auto;
+  border-radius: 8px;
+  background: #fff;
+  padding: 2px 6px;
+}
+
+.hero-logo {
+  height: 72px;
+  width: auto;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 6px 10px;
+}
+
+.facility-map svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.facility-map .map-tile rect {
+  fill: #f4efe8;
+  stroke: #b9ad9c;
+  stroke-width: 2;
+}
+
+.facility-map .map-court rect {
+  fill: #e9b96b;
+  stroke: #a9741f;
+}
+
+.facility-map .map-court.open rect {
+  fill: #cde8cf;
+  stroke: #2f7d3b;
+}
+
+.facility-map .map-court.busy rect {
+  fill: #f3d2cd;
+  stroke: #a2402f;
+}
+
+.facility-map .map-court[data-court] {
+  cursor: pointer;
+}
+
+.facility-map .map-court[data-court]:hover rect,
+.facility-map .map-court[data-court]:focus-visible rect {
+  stroke-width: 4;
+}
+
+.facility-map .map-net {
+  stroke: #7c6a52;
+  stroke-width: 2;
+  stroke-dasharray: 6 5;
+}
+
+.facility-map .map-label {
+  font-size: 20px;
+  font-weight: 700;
+  fill: #3c2f1d;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+
+.facility-map .map-label.small {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.facility-map .map-status {
+  font-size: 13px;
+  fill: #514433;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.facility-map figcaption {
+  margin-top: 8px;
+}
+
+.hours-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.hours-cell {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: grid;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.hours-cell.closed {
+  opacity: 0.6;
+}
+
+.row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ghost-action {
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  background: transparent;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.ghost-action:hover {
+  background: rgba(0, 0, 0, 0.06);
+}

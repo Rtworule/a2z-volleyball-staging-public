@@ -138,6 +138,11 @@ const state = {
   },
   date: "2026-06-01",
   time: "18:00",
+  memberPortalLoadedFrom: null,
+  memberContexts: [],
+  myReservations: [],
+  bookingContextKey: "",
+  lessonBracket: "1-2",
   durationMinutes: 120,
   resourceType: "court",
   selectedCourt: "court-3",
@@ -457,6 +462,10 @@ document.addEventListener("click", (event) => {
     void bookSelectedSlot();
   }
 
+  if (target.dataset.action === "cancel-reservation") {
+    void cancelMyReservation(target.dataset.reservation);
+  }
+
   if (target.dataset.action === "approve") {
     approvePendingUser(target.dataset.user);
   }
@@ -758,7 +767,11 @@ document.addEventListener("input", (event) => {
 
   if (control.dataset.control) {
     updateBookingControl(control);
-    shouldRender = shouldRender || ["bookingSubjectId", "resourceType"].includes(control.dataset.control);
+    shouldRender = shouldRender || ["bookingSubjectId", "resourceType", "bookingContextKey", "date"].includes(control.dataset.control);
+    if (control.dataset.control === "date" && shouldUseLiveAuth() && isApprovedMember()
+      && state.memberPortalLoadedFrom && state.date && state.date !== state.memberPortalLoadedFrom) {
+      void loadMemberPortal();
+    }
   }
 
   if (control.dataset.config && isAdminSession()) {
@@ -931,7 +944,7 @@ function renderTopbar() {
   return `
     <header class="topbar">
       <a class="brand" href="#home" aria-label="A to Z Volleyball Center home">
-        <span class="brand-mark">A2Z</span>
+        <img class="brand-logo" src="/atoz-volleyball-logo.png" alt="">
         <span>
           <strong>A to Z Volleyball Center</strong>
           <small>Courts, training, teams</small>
@@ -1011,13 +1024,15 @@ function renderHero() {
   return `
     <section class="hero public-hero" style="--hero-image: url('${HERO_IMAGE}')">
       <div class="hero-copy">
+        <img class="hero-logo" src="/atoz-volleyball-logo.png" alt="A to Z Volleyball Center logo">
         <p class="eyebrow">Indoor volleyball and performance center</p>
         <h1>A to Z Volleyball Center</h1>
-        <p class="hero-text">Nine indoor courts, training space, private lessons, team rentals, camps, and tournament support under one roof.</p>
-      </div>
-      <div class="hero-actions">
-        ${state.user ? "" : `<button type="button" class="primary-action" data-view="login">Log in</button>`}
-        <button type="button" class="secondary-action" data-view="programs">View programs</button>
+        <p class="hero-text">Nine indoor courts, a dedicated trainer gym, private lessons, team rentals, camps, and tournament support under one roof.</p>
+        <div class="hero-actions">
+          ${state.user ? "" : `<button type="button" class="primary-action" data-view="signup">Create an account</button>`}
+          ${state.user ? "" : `<button type="button" class="secondary-action" data-view="login">Log in</button>`}
+          <button type="button" class="secondary-action" data-view="programs">View programs</button>
+        </div>
       </div>
     </section>
   `;
@@ -1058,6 +1073,32 @@ function renderHomeView() {
       ${metric(formatCurrency(state.settings.pricing.courtHourlyRate), "court hourly rate")}
       ${metric("30m", "start intervals")}
     </section>
+    <section class="workspace map-section">
+      <div class="workspace-head">
+        <div>
+          <p class="eyebrow">Facility map</p>
+          <h2>Nine courts plus a dedicated trainer gym</h2>
+        </div>
+      </div>
+      ${renderFacilityMap({ interactive: isApprovedMember() })}
+    </section>
+    <section class="workspace hours-section">
+      <div class="workspace-head">
+        <div>
+          <p class="eyebrow">Hours</p>
+          <h2>Open seven days a week</h2>
+        </div>
+      </div>
+      <div class="hours-grid">
+        ${Object.entries(state.settings.operatingHours).map(([dayIndex, hours]) => `
+          <div class="hours-cell${hours.closed ? " closed" : ""}">
+            <strong>${dayName(Number(dayIndex))}</strong>
+            <span>${hours.closed ? "Closed" : `${formatTime(hours.open)} – ${formatTime(hours.close)}`}</span>
+          </div>
+        `).join("")}
+      </div>
+      <p class="small-copy">Court schedules and reservations are available to approved member accounts after sign-in. Invoices are sent after play — no online payment is required.</p>
+    </section>
   `;
 }
 
@@ -1089,7 +1130,7 @@ function renderLoginView() {
         <form class="form-panel" data-form="login" aria-label="Login form">
           <label>
             ${shouldUseLiveAuth() ? "Email" : "Username or email"}
-            <input name="loginId" autocomplete="username" value="${escapeHtml(state.loginId)}" placeholder="${shouldUseLiveAuth() ? "admin@example.com" : "member or member@a2z.local"}">
+            <input name="loginId" autocomplete="username" value="${escapeHtml(state.loginId)}" placeholder="${shouldUseLiveAuth() ? "you@example.com" : "member or member@a2z.local"}">
           </label>
           <label>
             Password
@@ -1207,7 +1248,7 @@ function renderScheduleView() {
           </button>`;
         }).join("")}
       </div>
-      ${renderCourtMap(!isApprovedMember())}
+      ${renderFacilityMap({ interactive: isApprovedMember() })}
     </section>
   `;
 }
@@ -1283,6 +1324,7 @@ function renderBookingView() {
               </select>
             </label>
           ` : ""}
+          ${!isAdminSession() && shouldUseLiveAuth() ? renderMemberBookingContextFields() : ""}
           ${isAdminSession() ? `
             <label>
               Client
@@ -1319,7 +1361,7 @@ function renderBookingView() {
             ${bookingSeasonPrice ? `<div><dt>Season</dt><dd>${escapeHtml(seasonPriceLabel(bookingSeasonPrice))}</dd></div>` : ""}
             <div><dt>Hourly rate</dt><dd>${formatCurrency(estimatedRate)}</dd></div>
             <div><dt>Estimated due</dt><dd>${formatCurrency(estimatedDue)}</dd></div>
-            <div><dt>Account</dt><dd>${escapeHtml(subjectById(state.bookingSubjectId)?.displayName ?? state.user.name)}</dd></div>
+            <div><dt>Account</dt><dd>${escapeHtml((isAdminSession() ? subjectById(state.bookingSubjectId)?.displayName : memberContextByKey(state.bookingContextKey)?.label) ?? state.user.name)}</dd></div>
           </dl>
           <p class="small-copy">Reservations start on the hour or half-hour and last at least one hour.</p>
         </div>
@@ -1331,6 +1373,40 @@ function renderBookingView() {
 function renderMyBookingsView() {
   if (!isApprovedMember()) {
     return "";
+  }
+
+  if (shouldUseLiveAuth()) {
+    const reservations = [...state.myReservations]
+      .filter((reservation) => reservation.status !== "cancelled")
+      .sort((a, b) => new Date(a.start) - new Date(b.start));
+    return `
+      <section class="workspace">
+        <div class="workspace-head">
+          <div>
+            <p class="eyebrow">My bookings</p>
+            <h2>${reservations.length} reservation${reservations.length === 1 ? "" : "s"}</h2>
+          </div>
+        </div>
+        <div class="stack-list">
+          ${reservations.length ? reservations.map((reservation) => {
+            const isFuture = new Date(reservation.start) > new Date();
+            const isPaid = reservation.paymentStatus === "paid";
+            return `
+              <div class="list-row">
+                <span>
+                  <strong>${reservation.resourceType === "court" ? `Court ${reservation.courtNumber}` : "Trainer gym"}</strong>
+                  <small>${formatShortDate(reservation.start)} ${formatShortTime(reservation.start)}-${formatShortTime(reservation.end)} · ${escapeHtml(reservation.teamName ?? "")}${reservation.lessonPlayerBracket ? ` · ${reservation.lessonPlayerBracket} players` : ""}</small>
+                </span>
+                <span class="row-actions">
+                  <span class="status-pill ${isPaid ? "is-open" : "is-due"}">${isPaid ? "paid" : "invoice due"}</span>
+                  ${isFuture && !isPaid ? `<button type="button" class="ghost-action" data-action="cancel-reservation" data-reservation="${reservation.id}">Cancel</button>` : ""}
+                </span>
+              </div>
+            `;
+          }).join("") : `<p class="small-copy">No reservations yet. Head to the schedule to reserve court or trainer gym time.</p>`}
+        </div>
+      </section>
+    `;
   }
 
   const bookings = buildScheduler().listUserBookings(state.user.id, state.user);
@@ -2938,6 +3014,7 @@ async function initializeApp() {
   if (shouldUseLiveAuth()) {
     clearLiveAdminData();
     await restoreSupabaseSession();
+    await loadPublicFacilityInfo();
   }
 
   ensureAllowedView();
@@ -3089,6 +3166,8 @@ async function applySupabaseUser(authUser) {
 
   if (isAdminSession()) {
     await loadAdminDashboard();
+  } else if (isApprovedMember()) {
+    await loadMemberPortal();
   }
 
   return true;
@@ -3112,6 +3191,36 @@ async function bookSelectedSlot(options = {}) {
     await loadAdminDashboard();
     state.notice = data?.id ? "Reservation created." : "1 reservation created.";
     setView("admin");
+    return;
+  }
+
+  if (shouldUseLiveAuth() && isApprovedMember()) {
+    const context = memberContextByKey(state.bookingContextKey);
+    if (!context) {
+      state.notice = "Your account is not linked to a club or coach profile yet. Please contact the front desk.";
+      render();
+      return;
+    }
+    const payload = {
+      bookingType: context.type,
+      subjectId: context.subjectId,
+      subjectTeamId: context.teamId ?? null,
+      resourceType: state.resourceType,
+      courtId: state.resourceType === "court" ? state.selectedCourt : null,
+      startDate: state.date,
+      startTime: state.time,
+      durationMinutes: state.durationMinutes,
+      lessonPlayerBracket: context.type === "private" ? state.lessonBracket : null
+    };
+    const { error } = await supabase.rpc("member_create_reservation", { payload });
+    if (error) {
+      state.notice = readableSupabaseError(error, "Could not create the reservation.");
+      render();
+      return;
+    }
+    await loadMemberPortal();
+    state.notice = "Reservation confirmed. The invoice will follow by email.";
+    setView("my-bookings");
     return;
   }
 
@@ -7031,6 +7140,242 @@ function readableSupabaseError(error, fallback) {
     return "A season price already exists for this client and season. Edit the existing price instead of creating a duplicate.";
   }
   return error.message ? `${fallback} ${error.message}` : fallback;
+}
+
+
+// ---------------------------------------------------------------------------
+// Member portal (live Supabase data for approved non-admin accounts)
+// ---------------------------------------------------------------------------
+
+async function loadPublicFacilityInfo() {
+  if (!supabase) {
+    return;
+  }
+  try {
+    const [configResult, hoursResult] = await Promise.all([
+      supabase.from("facility_config").select("court_count, trainer_capacity, court_hourly_rate, gym_hourly_rate").eq("id", true).maybeSingle(),
+      supabase.from("operating_hours").select("day_of_week, open_time, close_time, is_closed")
+    ]);
+    const config = configResult.data;
+    const hours = hoursResult.data;
+    if (config) {
+      state.settings.courtCount = config.court_count;
+      state.settings.trainerCapacity = config.trainer_capacity;
+      state.settings.pricing.courtHourlyRate = Number(config.court_hourly_rate);
+      state.settings.pricing.gymHourlyRate = Number(config.gym_hourly_rate);
+    }
+    if (hours?.length) {
+      state.settings.operatingHours = Object.fromEntries(hours.map((row) => [
+        row.day_of_week,
+        { open: String(row.open_time).slice(0, 5), close: String(row.close_time).slice(0, 5), closed: Boolean(row.is_closed) }
+      ]));
+    }
+  } catch {
+    // Public info is cosmetic; never block first paint on it.
+  }
+}
+
+async function loadMemberPortal() {
+  if (!shouldUseLiveAuth() || !supabase || !isApprovedMember()) {
+    return;
+  }
+  const startDate = state.date && state.date >= todayDateKey() ? state.date : todayDateKey();
+  const { data, error } = await supabase.rpc("member_get_portal", { p_start_date: startDate, p_days: 14 });
+  if (error) {
+    state.notice = readableSupabaseError(error, "Could not load the schedule.");
+    render();
+    return;
+  }
+  applyMemberPortal(data, startDate);
+  render();
+}
+
+function applyMemberPortal(data, startDate) {
+  const settings = data?.settings ?? {};
+  state.settings.courtCount = settings.courtCount ?? state.settings.courtCount;
+  state.settings.trainerCapacity = settings.trainerCapacity ?? state.settings.trainerCapacity;
+  state.settings.minBookingMinutes = settings.minReservationMinutes ?? state.settings.minBookingMinutes;
+  state.settings.slotIntervalMinutes = settings.reservationStepMinutes ?? state.settings.slotIntervalMinutes;
+  state.settings.pricing.courtHourlyRate = Number(settings.courtHourlyRate ?? state.settings.pricing.courtHourlyRate);
+  state.settings.pricing.gymHourlyRate = Number(settings.gymHourlyRate ?? state.settings.pricing.gymHourlyRate);
+
+  if (data?.operatingHours && Object.keys(data.operatingHours).length) {
+    state.settings.operatingHours = Object.fromEntries(Object.entries(data.operatingHours).map(([day, hours]) => [
+      day, { open: hours.open, close: hours.close, closed: Boolean(hours.closed) }
+    ]));
+  }
+  state.settings.closures = (data?.closures ?? []).map((closure, index) => ({
+    id: `closure-${index}`,
+    resourceType: closure.resourceType,
+    courtId: closure.courtNumber ? `court-${closure.courtNumber}` : undefined,
+    start: closure.start,
+    end: closure.end,
+    reason: closure.reason
+  }));
+  state.settings.fixedReservations = (data?.fixedReservations ?? []).map((fixed, index) => ({
+    id: `fixed-${index}`,
+    resourceType: fixed.resourceType,
+    courtId: fixed.courtNumber ? `court-${fixed.courtNumber}` : undefined,
+    daysOfWeek: fixed.daysOfWeek ?? [],
+    startDate: fixed.startDate,
+    endDate: fixed.endDate,
+    startTime: fixed.startTime,
+    endTime: fixed.endTime
+  }));
+  state.bookings = (data?.busy ?? []).map((block) => ({
+    id: block.id,
+    userId: block.mine ? state.user?.id : "other-member",
+    teamId: block.label ?? null,
+    resourceType: block.resourceType,
+    courtId: block.courtNumber ? `court-${block.courtNumber}` : null,
+    start: block.start,
+    end: block.end,
+    status: "confirmed",
+    paymentStatus: "due",
+    deleted: false
+  }));
+
+  state.memberContexts = [];
+  (data?.contexts ?? []).forEach((context) => {
+    if (context.isCoach) {
+      state.memberContexts.push({
+        key: `private:${context.subjectId}`,
+        type: "private",
+        subjectId: context.subjectId,
+        teamId: null,
+        label: `Private lesson (${context.displayName})`
+      });
+      return;
+    }
+    if (context.haveTeams) {
+      (context.teams ?? []).forEach((team) => {
+        state.memberContexts.push({
+          key: `club:${context.subjectId}:${team.id}`,
+          type: "club",
+          subjectId: context.subjectId,
+          teamId: team.id,
+          label: `${context.displayName} — ${team.name}`
+        });
+      });
+      return;
+    }
+    state.memberContexts.push({
+      key: `club:${context.subjectId}:`,
+      type: "club",
+      subjectId: context.subjectId,
+      teamId: null,
+      label: context.displayName
+    });
+  });
+  if (!state.memberContexts.find((context) => context.key === state.bookingContextKey)) {
+    state.bookingContextKey = state.memberContexts[0]?.key ?? "";
+  }
+  state.myReservations = data?.myReservations ?? [];
+  state.memberPortalLoadedFrom = startDate;
+  if (!state.date || state.date < startDate) {
+    state.date = startDate;
+  }
+}
+
+function memberContextByKey(key) {
+  return state.memberContexts.find((context) => context.key === key) ?? null;
+}
+
+function renderMemberBookingContextFields() {
+  if (!state.memberContexts.length) {
+    return `<p class="small-copy">Your account is approved but not linked to a club or coach profile yet. Contact the front desk so reservations can be assigned correctly.</p>`;
+  }
+  const context = memberContextByKey(state.bookingContextKey);
+  return `
+    <label>
+      Reserve for
+      <select data-control="bookingContextKey">
+        ${state.memberContexts.map((option) => `<option value="${option.key}" ${option.key === state.bookingContextKey ? "selected" : ""}>${escapeHtml(option.label)}</option>`).join("")}
+      </select>
+    </label>
+    ${context?.type === "private" ? `
+      <label>
+        Players attending
+        <select data-control="lessonBracket">
+          ${["1-2", "3", "4", "5+"].map((bracket) => `<option value="${bracket}" ${state.lessonBracket === bracket ? "selected" : ""}>${bracket} players</option>`).join("")}
+        </select>
+      </label>
+    ` : ""}
+  `;
+}
+
+async function cancelMyReservation(reservationId) {
+  if (!shouldUseLiveAuth() || !supabase || !reservationId) {
+    return;
+  }
+  const { error } = await supabase.rpc("member_cancel_reservation", { p_reservation_id: reservationId });
+  if (error) {
+    state.notice = readableSupabaseError(error, "Could not cancel the reservation.");
+    render();
+    return;
+  }
+  state.notice = "Reservation cancelled.";
+  await loadMemberPortal();
+}
+
+// ---------------------------------------------------------------------------
+// Facility map — Court 1 vertical top-left; trainer gym, office and locker
+// rooms below it; courts 2-9 to the right in two rows of four, arranged
+// clockwise starting from Court 2 at the bottom-left.
+// ---------------------------------------------------------------------------
+
+function renderFacilityMap({ interactive = false } = {}) {
+  const availability = interactive ? getCurrentAvailability() : null;
+  const courtClass = (courtNumber) => {
+    if (!availability) {
+      return "";
+    }
+    const court = availability.courts.find((entry) => entry.courtId === `court-${courtNumber}`);
+    return court?.available ? " open" : " busy";
+  };
+  const trainerOpenSlots = availability ? availability.trainer.availableSlots : null;
+
+  const courtTile = (courtNumber, x, y, width, height) => `
+    <g class="map-tile map-court${courtClass(courtNumber)}" ${interactive ? `data-court="court-${courtNumber}" role="button" tabindex="0" aria-label="Court ${courtNumber}"` : ""}>
+      <rect x="${x}" y="${y}" width="${width}" height="${height}" rx="10"></rect>
+      <line x1="${x + width / 2}" y1="${y + 8}" x2="${x + width / 2}" y2="${y + height - 8}" class="map-net"></line>
+      <text x="${x + width / 2}" y="${y + height / 2}" class="map-label">Court ${courtNumber}</text>
+      ${availability ? `<text x="${x + width / 2}" y="${y + height / 2 + 22}" class="map-status">${courtClass(courtNumber).includes("open") ? "Open" : "Reserved"}</text>` : ""}
+    </g>
+  `;
+  const roomTile = (label, x, y, width, height, extra = "") => `
+    <g class="map-tile map-room">
+      <rect x="${x}" y="${y}" width="${width}" height="${height}" rx="10"></rect>
+      <text x="${x + width / 2}" y="${y + height / 2}" class="map-label small">${label}</text>
+      ${extra}
+    </g>
+  `;
+
+  const topRow = [3, 4, 5, 6];
+  const bottomRow = [2, 9, 8, 7];
+  const columnWidth = 168;
+  const columnGap = 14;
+  const rightStart = 224;
+  const rowHeight = 226;
+
+  return `
+    <figure class="facility-map" aria-label="Facility map">
+      <svg viewBox="0 0 960 520" xmlns="http://www.w3.org/2000/svg" role="img">
+        <g class="map-tile map-court vertical${courtClass(1)}" ${interactive ? `data-court="court-1" role="button" tabindex="0" aria-label="Court 1"` : ""}>
+          <rect x="16" y="16" width="188" height="290" rx="10"></rect>
+          <line x1="24" y1="161" x2="196" y2="161" class="map-net"></line>
+          <text x="110" y="150" class="map-label">Court 1</text>
+          ${availability ? `<text x="110" y="176" class="map-status">${courtClass(1).includes("open") ? "Open" : "Reserved"}</text>` : ""}
+        </g>
+        ${roomTile(`Trainer gym${trainerOpenSlots !== null ? ` · ${trainerOpenSlots}/${state.settings.trainerCapacity} open` : ""}`, 16, 318, 188, 92)}
+        ${roomTile("Office", 16, 422, 188, 38)}
+        ${roomTile("Locker rooms", 16, 472, 188, 38)}
+        ${topRow.map((courtNumber, index) => courtTile(courtNumber, rightStart + index * (columnWidth + columnGap), 16, columnWidth, rowHeight)).join("")}
+        ${bottomRow.map((courtNumber, index) => courtTile(courtNumber, rightStart + index * (columnWidth + columnGap), 16 + rowHeight + 16, columnWidth, rowHeight)).join("")}
+      </svg>
+      <figcaption class="small-copy">Nine courts, trainer gym, office, and locker rooms. Layout is approximate.</figcaption>
+    </figure>
+  `;
 }
 
 function currentView() {
