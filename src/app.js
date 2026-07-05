@@ -1,9 +1,9 @@
 import { SchedulingService } from "./scheduler.js";
 import { supabase, supabaseConfig } from "./supabaseClient.js";
 
-const HERO_IMAGE = "https://images.pexels.com/photos/17557539/pexels-photo-17557539.jpeg?auto=compress&cs=tinysrgb&w=1800";
-const BALL_IMAGE = "https://images.pexels.com/photos/32602956/pexels-photo-32602956.jpeg?auto=compress&cs=tinysrgb&w=1200";
-const TRAINING_IMAGE = "https://images.pexels.com/photos/8007401/pexels-photo-8007401.jpeg?auto=compress&cs=tinysrgb&w=1400";
+const HERO_IMAGE = "/hero-court.svg";
+const BALL_IMAGE = "/ball-court.svg";
+const TRAINING_IMAGE = "/training.svg";
 const FACILITY_TIMEZONE = "America/New_York";
 const DEFAULT_MESSAGE_DISPLAY_SECONDS = 5;
 const isLocalPreview = ["", "localhost", "127.0.0.1"].includes(window.location.hostname) || window.location.protocol === "file:";
@@ -470,6 +470,10 @@ document.addEventListener("click", (event) => {
 
   if (target.dataset.action === "forgot-password") {
     void sendPasswordReset();
+  }
+
+  if (target.dataset.action === "social-login") {
+    void signInWithProvider(target.dataset.provider);
   }
 
   if (target.dataset.action === "confirm-password-reset") {
@@ -1166,8 +1170,14 @@ function renderLoginView() {
           ${socialButton("Apple")}
           ${socialButton("Facebook")}
         </div>
-        ${isLocalPreview ? `<p class="small-copy">Local test logins: member / A2zMember1, pending / A2zPending1, owner / A2zOwner1.</p>` : `<p class="small-copy">Production uses Supabase email and password login. Social login is disabled for now.</p>`}
-        ${shouldUseLiveAuth() ? `<button type="button" class="ghost-action" data-action="forgot-password">Forgot password?</button>` : ""}
+        ${isLocalPreview ? `<p class="small-copy">Local test logins: member / A2zMember1, pending / A2zPending1, owner / A2zOwner1.</p>` : `<p class="small-copy">Sign in with your email and password, or use Google or Facebook below.</p>`}
+        ${shouldUseLiveAuth() ? `
+          <button type="button" class="ghost-action" data-action="forgot-password">Forgot password?</button>
+          <div class="social-login" role="group" aria-label="Sign in with a provider">
+            <span class="small-copy">or continue with</span>
+            <button type="button" class="secondary-action social-btn" data-action="social-login" data-provider="google">Google</button>
+            <button type="button" class="secondary-action social-btn" data-action="social-login" data-provider="facebook">Facebook</button>
+          </div>` : ""}
         <button type="button" class="secondary-action" data-view="signup">Create account</button>
       </article>
       <aside class="panel image-panel">
@@ -1216,6 +1226,12 @@ function renderSignupView() {
           </label>
           <button type="submit" class="primary-action full">Request access</button>
         </form>
+        ${shouldUseLiveAuth() ? `
+          <div class="social-login" role="group" aria-label="Sign up with a provider">
+            <span class="small-copy">or sign up with</span>
+            <button type="button" class="secondary-action social-btn" data-action="social-login" data-provider="google">Google</button>
+            <button type="button" class="secondary-action social-btn" data-action="social-login" data-provider="facebook">Facebook</button>
+          </div>` : ""}
         <button type="button" class="secondary-action" data-view="login">Back to log in</button>
       </article>
       <aside class="panel image-panel">
@@ -7416,6 +7432,24 @@ function renderFacilityMap({ interactive = false } = {}) {
   `;
 }
 
+
+async function signInWithProvider(provider) {
+  if (!shouldUseLiveAuth() || !supabase || !["google", "facebook", "apple"].includes(provider)) {
+    return;
+  }
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: { redirectTo: window.location.origin }
+  });
+  if (error) {
+    const providerName = provider.charAt(0).toUpperCase() + provider.slice(1);
+    state.notice = /not enabled|unsupported/i.test(error.message ?? "")
+      ? `${providerName} sign-in is not enabled yet. Please use email and password.`
+      : readableSupabaseError(error, `Could not start ${providerName} sign-in.`);
+    render();
+  }
+  // On success the browser redirects to the provider; nothing further to do here.
+}
 
 async function sendPasswordReset() {
   if (!shouldUseLiveAuth() || !supabase) {

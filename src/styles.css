@@ -2131,3 +2131,15 @@ textarea {
   font-size: 12px;
   opacity: 0.75;
 }
+
+.social-login {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.social-btn {
+  min-width: 110px;
+}

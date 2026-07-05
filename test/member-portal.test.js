@@ -55,3 +55,17 @@ test("signup has no parent mentions and redirects email confirmation to the site
   assert.match(appSource, /placeholder="coach-name or club-name"/);
   assert.match(appSource, /emailRedirectTo: window\.location\.origin/);
 });
+
+test("social login uses Supabase OAuth with a site redirect", () => {
+  assert.match(appSource, /supabase\.auth\.signInWithOAuth\(\{\s*provider,\s*options: \{ redirectTo: window\.location\.origin \}/);
+  assert.match(appSource, /data-provider="google"/);
+  assert.match(appSource, /data-provider="facebook"/);
+  assert.doesNotMatch(appSource, /Social login is disabled/);
+});
+
+test("site imagery is local volleyball artwork", () => {
+  assert.match(appSource, /const HERO_IMAGE = "\/hero-court\.svg"/);
+  assert.match(appSource, /const BALL_IMAGE = "\/ball-court\.svg"/);
+  assert.match(appSource, /const TRAINING_IMAGE = "\/training\.svg"/);
+  assert.doesNotMatch(appSource, /pexels\.com/);
+});
