@@ -29,3 +29,18 @@ test("facility map places court 1 left and courts 2-9 clockwise from bottom-left
 test("public login screen uses a neutral email placeholder", () => {
   assert.match(appSource, /shouldUseLiveAuth\(\) \? "you@example\.com" : "member or member@a2z\.local"/);
 });
+
+test("forgot-password flow uses Supabase Auth recovery", () => {
+  assert.match(appSource, /supabase\.auth\.resetPasswordForEmail/);
+  assert.match(appSource, /PASSWORD_RECOVERY/);
+  assert.match(appSource, /supabase\.auth\.updateUser\(\{ password \}\)/);
+});
+
+test("schedule view renders a half-hour day grid for members", () => {
+  assert.match(appSource, /renderDayGrid/);
+  assert.match(appSource, /data-grid-time/);
+});
+
+test("private lesson estimates use bracket prices from the portal", () => {
+  assert.match(appSource, /state\.bracketPrices\.find\(\(price\) => price\.bracket === state\.lessonBracket\)/);
+});

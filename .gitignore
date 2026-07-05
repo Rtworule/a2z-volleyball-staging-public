@@ -31,3 +31,6 @@ supabase/.temp/
 .DS_Store
 .idea/
 .vscode/
+
+# Build output
+/assets/

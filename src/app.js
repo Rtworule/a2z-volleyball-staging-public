@@ -143,6 +143,8 @@ const state = {
   myReservations: [],
   bookingContextKey: "",
   lessonBracket: "1-2",
+  bracketPrices: [],
+  resetPasswordValue: "",
   durationMinutes: 120,
   resourceType: "court",
   selectedCourt: "court-3",
@@ -464,6 +466,26 @@ document.addEventListener("click", (event) => {
 
   if (target.dataset.action === "cancel-reservation") {
     void cancelMyReservation(target.dataset.reservation);
+  }
+
+  if (target.dataset.action === "forgot-password") {
+    void sendPasswordReset();
+  }
+
+  if (target.dataset.action === "confirm-password-reset") {
+    void confirmPasswordReset();
+  }
+
+  if (target.dataset.gridTime && target.dataset.gridCourt && isApprovedMember()) {
+    state.time = target.dataset.gridTime;
+    if (target.dataset.gridCourt === "trainer") {
+      state.resourceType = "trainer";
+      state.selectedCourt = "";
+    } else {
+      state.resourceType = "court";
+      state.selectedCourt = target.dataset.gridCourt;
+    }
+    setView("book");
   }
 
   if (target.dataset.action === "approve") {
@@ -913,6 +935,7 @@ function render() {
       ${state.view === "home" ? renderHomeView() : ""}
       ${state.view === "login" ? renderLoginView() : ""}
       ${state.view === "signup" ? renderSignupView() : ""}
+      ${state.view === "reset-password" ? renderResetPasswordView() : ""}
       ${state.view === "programs" ? renderProgramsView() : ""}
       ${state.view === "schedule" ? renderScheduleView() : ""}
       ${state.view === "book" ? renderBookingView() : ""}
@@ -1144,6 +1167,7 @@ function renderLoginView() {
           ${socialButton("Facebook")}
         </div>
         ${isLocalPreview ? `<p class="small-copy">Local test logins: member / A2zMember1, pending / A2zPending1, owner / A2zOwner1.</p>` : `<p class="small-copy">Production uses Supabase email and password login. Social login is disabled for now.</p>`}
+        ${shouldUseLiveAuth() ? `<button type="button" class="ghost-action" data-action="forgot-password">Forgot password?</button>` : ""}
         <button type="button" class="secondary-action" data-view="signup">Create account</button>
       </article>
       <aside class="panel image-panel">
@@ -1249,6 +1273,7 @@ function renderScheduleView() {
         }).join("")}
       </div>
       ${renderFacilityMap({ interactive: isApprovedMember() })}
+      ${isApprovedMember() ? renderDayGrid() : ""}
     </section>
   `;
 }
@@ -1279,7 +1304,12 @@ function renderBookingView() {
   const selectedCourt = availability.courts.find((court) => court.courtId === state.selectedCourt);
   const slotAvailable = state.resourceType === "trainer" ? availability.trainer.available : selectedCourt?.available;
   const bookingSeasonPrice = selectedBookingSeasonPrice();
-  const estimatedRate = bookingSeasonPrice?.hourlyRate ?? (state.resourceType === "trainer" ? state.settings.pricing.gymHourlyRate : state.settings.pricing.courtHourlyRate);
+  const memberContext = !isAdminSession() && shouldUseLiveAuth() ? memberContextByKey(state.bookingContextKey) : null;
+  const bracketPrice = memberContext?.type === "private"
+    ? state.bracketPrices.find((price) => price.bracket === state.lessonBracket)
+    : null;
+  const bracketRate = bracketPrice ? (state.resourceType === "trainer" ? bracketPrice.gymHourlyRate : bracketPrice.courtHourlyRate) : null;
+  const estimatedRate = bracketRate ?? bookingSeasonPrice?.hourlyRate ?? (state.resourceType === "trainer" ? state.settings.pricing.gymHourlyRate : state.settings.pricing.courtHourlyRate);
   const estimatedDue = estimatedRate * (state.durationMinutes / 60);
 
   return `
@@ -3011,6 +3041,15 @@ function renderMobileNav() {
 }
 
 async function initializeApp() {
+  if (shouldUseLiveAuth() && supabase) {
+    supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        state.view = "reset-password";
+        render();
+      }
+    });
+  }
+
   if (shouldUseLiveAuth()) {
     clearLiveAdminData();
     await restoreSupabaseSession();
@@ -7271,6 +7310,7 @@ function applyMemberPortal(data, startDate) {
     state.bookingContextKey = state.memberContexts[0]?.key ?? "";
   }
   state.myReservations = data?.myReservations ?? [];
+  state.bracketPrices = data?.bracketPrices ?? [];
   state.memberPortalLoadedFrom = startDate;
   if (!state.date || state.date < startDate) {
     state.date = startDate;
@@ -7378,9 +7418,143 @@ function renderFacilityMap({ interactive = false } = {}) {
   `;
 }
 
+
+async function sendPasswordReset() {
+  if (!shouldUseLiveAuth() || !supabase) {
+    return;
+  }
+  const email = state.loginId.trim() || document.querySelector('input[name="loginId"]')?.value?.trim() || "";
+  if (!email.includes("@")) {
+    state.notice = "Enter your account email above, then press Forgot password again.";
+    render();
+    return;
+  }
+  state.loginId = email;
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin
+  });
+  state.notice = error
+    ? readableSupabaseError(error, "Could not send the reset email.")
+    : "If that email has an account, a password reset link is on its way.";
+  render();
+}
+
+function renderResetPasswordView() {
+  return `
+    <section class="workspace narrow-workspace">
+      <div class="workspace-head">
+        <div>
+          <p class="eyebrow">Account</p>
+          <h2>Choose a new password</h2>
+        </div>
+      </div>
+      <form class="panel form-panel" aria-label="Reset password">
+        <label>
+          New password
+          <input data-control="resetPasswordValue" name="newPassword" type="password" autocomplete="new-password" minlength="8" value="${escapeHtml(state.resetPasswordValue)}">
+        </label>
+        <button type="button" class="primary-action full" data-action="confirm-password-reset">Save new password</button>
+        <p class="small-copy">At least 8 characters. You will stay signed in after saving.</p>
+      </form>
+    </section>
+  `;
+}
+
+async function confirmPasswordReset() {
+  if (!shouldUseLiveAuth() || !supabase) {
+    return;
+  }
+  const password = state.resetPasswordValue ?? "";
+  if (password.length < 8) {
+    state.notice = "Passwords need at least 8 characters.";
+    render();
+    return;
+  }
+  const { error } = await supabase.auth.updateUser({ password });
+  state.resetPasswordValue = "";
+  if (error) {
+    state.notice = readableSupabaseError(error, "Could not update the password.");
+    render();
+    return;
+  }
+  state.notice = "Password updated.";
+  setView("home");
+}
+
+// ---------------------------------------------------------------------------
+// Day grid: half-hour slots x (9 courts + trainer gym) for the selected date.
+// ---------------------------------------------------------------------------
+
+function dayGridSlots() {
+  const dayIndex = new Date(`${state.date}T12:00:00`).getDay();
+  const hours = state.settings.operatingHours[dayIndex];
+  if (!hours || hours.closed) {
+    return [];
+  }
+  const slots = [];
+  let cursor = hours.open;
+  while (cursor < hours.close) {
+    slots.push(cursor);
+    cursor = addMinutes(cursor, 30);
+  }
+  return slots;
+}
+
+function renderDayGrid() {
+  const slots = dayGridSlots();
+  if (!slots.length) {
+    return `<p class="small-copy">The facility is closed on this date.</p>`;
+  }
+  const scheduler = buildScheduler();
+  const courts = Array.from({ length: state.settings.courtCount }, (_, index) => `court-${index + 1}`);
+  const myBookings = activeBookings().filter((booking) => booking.userId === state.user?.id);
+  const isMine = (courtId, start, end) => myBookings.some((booking) =>
+    (courtId === "trainer" ? booking.resourceType === "trainer" : booking.courtId === courtId)
+    && new Date(booking.start) < end && start < new Date(booking.end));
+
+  const rows = slots.map((slot) => {
+    const start = toIso(state.date, slot);
+    const end = toIso(state.date, addMinutes(slot, 30));
+    let availability;
+    try {
+      availability = scheduler.getAvailability({ start, end, viewer: state.user });
+    } catch {
+      availability = null;
+    }
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const courtCells = courts.map((courtId) => {
+      const open = availability?.courts.find((court) => court.courtId === courtId)?.available ?? false;
+      const mine = isMine(courtId, startDate, endDate);
+      const cls = mine ? "mine" : open ? "open" : "busy";
+      return `<td><button type="button" class="grid-cell ${cls}" ${open ? `data-grid-time="${slot}" data-grid-court="${courtId}"` : "disabled"} aria-label="${labelCourt(courtId)} at ${formatTime(slot)}: ${mine ? "yours" : open ? "open" : "reserved"}"></button></td>`;
+    }).join("");
+    const trainerOpen = (availability?.trainer.availableSlots ?? 0) > 0;
+    const trainerMine = isMine("trainer", startDate, endDate);
+    const trainerCls = trainerMine ? "mine" : trainerOpen ? "open" : "busy";
+    return `<tr><th scope="row">${formatTime(slot)}</th>${courtCells}<td><button type="button" class="grid-cell ${trainerCls}" ${trainerOpen ? `data-grid-time="${slot}" data-grid-court="trainer"` : "disabled"} aria-label="Trainer gym at ${formatTime(slot)}: ${availability?.trainer.availableSlots ?? 0} open"></button></td></tr>`;
+  }).join("");
+
+  return `
+    <div class="day-grid-wrap">
+      <table class="day-grid" aria-label="Availability for ${formatDateLabel(state.date)}">
+        <thead>
+          <tr>
+            <th scope="col">Time</th>
+            ${courts.map((courtId) => `<th scope="col">${labelCourt(courtId).replace("Court ", "C")}</th>`).join("")}
+            <th scope="col">Gym</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <p class="small-copy grid-legend"><span class="grid-cell open"></span> open · <span class="grid-cell busy"></span> reserved · <span class="grid-cell mine"></span> yours — tap an open slot to book it.</p>
+    </div>
+  `;
+}
+
 function currentView() {
   const view = window.location.hash.replace("#", "");
-  return ["home", "login", "signup", "programs", "schedule", "book", "my-bookings", "admin"].includes(view) ? view : "home";
+  return ["home", "login", "signup", "programs", "schedule", "book", "my-bookings", "admin", "reset-password"].includes(view) ? view : "home";
 }
 
 function setView(view) {
@@ -7399,6 +7573,9 @@ function ensureAllowedView() {
   }
   if (state.view === "admin" && !isAdminSession()) {
     state.view = state.user ? "home" : "login";
+  }
+  if (state.view === "reset-password" && !shouldUseLiveAuth()) {
+    state.view = "home";
   }
 }
 

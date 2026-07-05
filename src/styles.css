@@ -2054,3 +2054,73 @@ textarea {
 .ghost-action:hover {
   background: rgba(0, 0, 0, 0.06);
 }
+
+/* --- Day availability grid --------------------------------------------- */
+.day-grid-wrap {
+  overflow-x: auto;
+  margin-top: 18px;
+}
+
+.day-grid {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 560px;
+}
+
+.day-grid th {
+  font-size: 12px;
+  padding: 4px 6px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.day-grid tbody th {
+  text-align: right;
+  font-weight: 600;
+}
+
+.day-grid td {
+  padding: 2px;
+}
+
+.grid-cell {
+  display: block;
+  width: 100%;
+  min-width: 28px;
+  height: 22px;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  cursor: default;
+  padding: 0;
+}
+
+.grid-cell.open {
+  background: #cde8cf;
+  border-color: #2f7d3b;
+  cursor: pointer;
+}
+
+.grid-cell.open:hover {
+  background: #a9d9ae;
+}
+
+.grid-cell.busy {
+  background: #f3d2cd;
+  border-color: #c98d81;
+}
+
+.grid-cell.mine {
+  background: #cfd9f3;
+  border-color: #3a5bbf;
+}
+
+.grid-legend .grid-cell {
+  display: inline-block;
+  width: 16px;
+  height: 12px;
+  vertical-align: middle;
+}
+
+.narrow-workspace {
+  max-width: 460px;
+}
