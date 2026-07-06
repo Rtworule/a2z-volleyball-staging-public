@@ -1089,10 +1089,10 @@ function renderHomeView() {
         </div>
         <p class="small-copy">A2Z supports court rentals, private coaching, team practices, seasonal blocks, camps, and tournament operations.</p>
         <div class="feature-list">
-          <span>Nine hardwood courts</span>
-          <span>Dedicated trainer gym area</span>
-          <span>Private lessons and team blocks</span>
-          <span>Online member reservations</span>
+          <span class="home-feature"><i class="ph-bold ph-volleyball"></i>Nine hardwood courts</span>
+          <span class="home-feature"><i class="ph-bold ph-barbell"></i>Weight Training &amp; Stretching Room</span>
+          <span class="home-feature"><i class="ph-bold ph-users-three"></i>Private lessons and team blocks</span>
+          <span class="home-feature"><i class="ph-bold ph-calendar-check"></i>Online member reservations</span>
         </div>
       </article>
       <aside class="panel image-panel">
@@ -1110,6 +1110,7 @@ function renderHomeView() {
       ${metric(formatCurrency(state.settings.pricing.courtHourlyRate), "court hourly rate")}
       ${metric("30m", "start intervals")}
     </section>
+    <div class="marquee" aria-hidden="true"><span>SEASON BLOCKS FOR CLUBS · PRIVATE LESSONS 1–2 / 3 / 4 / 5+ · WEIGHT TRAINING &amp; STRETCHING ROOM · INVOICED AFTER PLAY · OPEN 7 DAYS ·&nbsp;</span></div>
     <section class="workspace map-section">
       <div class="workspace-head">
         <div>
@@ -1134,7 +1135,7 @@ function renderHomeView() {
           </div>
         `).join("")}
       </div>
-      <p class="small-copy">Court schedules and reservations are available to approved member accounts after sign-in. Invoices are sent after play — no online payment is required.</p>
+      <p class="small-copy">Court schedules and reservations are available to approved member accounts after sign-in. Invoices are sent after play — no online payment is required.</p><p class="small-copy address-line">44080 Little River Turnpike, Suite 100, Chantilly, VA 20152</p>
     </section>
   `;
 }
