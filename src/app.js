@@ -1051,7 +1051,7 @@ function renderHero() {
         </form>
         <div class="facility-strip" aria-label="Facility snapshot">
           <span><strong>${state.settings.courtCount}</strong> courts</span>
-          <span><strong>${state.settings.trainerCapacity}</strong> gym coaching slots</span>
+          <span><strong>Rentable</strong> Weight Training &amp; Stretching Room</span>
           <span><strong>${formatCurrency(state.settings.pricing.courtHourlyRate)}</strong> court/hr</span>
         </div>
       </section>
@@ -1064,7 +1064,7 @@ function renderHero() {
         <img class="hero-logo" src="/atoz-volleyball-logo.png" alt="A to Z Volleyball Center logo">
         <p class="eyebrow">Indoor volleyball and performance center</p>
         <h1>A to Z Volleyball Center</h1>
-        <p class="hero-text">Nine indoor courts, a dedicated trainer gym, private lessons, team rentals, camps, and tournament support under one roof.</p>
+        <p class="hero-text">Nine PVC sport-tile courts, a rentable Weight Training &amp; Stretching Room, private lessons, team rentals, camps, and tournament support under one roof.</p>
         <div class="hero-actions">
           ${state.user ? "" : `<button type="button" class="primary-action" data-view="signup">Create an account</button>`}
           ${state.user ? "" : `<button type="button" class="secondary-action" data-view="login">Log in</button>`}
@@ -1089,7 +1089,7 @@ function renderHomeView() {
         </div>
         <p class="small-copy">A2Z supports court rentals, private coaching, team practices, seasonal blocks, camps, and tournament operations.</p>
         <div class="feature-list">
-          <span class="home-feature"><i class="ph-bold ph-volleyball"></i>Nine hardwood courts</span>
+          <span class="home-feature"><i class="ph-bold ph-volleyball"></i>Nine PVC sport-tile courts</span>
           <span class="home-feature"><i class="ph-bold ph-barbell"></i>Weight Training &amp; Stretching Room</span>
           <span class="home-feature"><i class="ph-bold ph-users-three"></i>Private lessons and team blocks</span>
           <span class="home-feature"><i class="ph-bold ph-calendar-check"></i>Online member reservations</span>
@@ -1106,16 +1106,16 @@ function renderHomeView() {
     </section>
     <section class="metric-row" aria-label="Facility metrics">
       ${metric(String(state.settings.courtCount), "volleyball courts")}
-      ${metric(String(state.settings.trainerCapacity), "gym coaching slots")}
+      ${metric("1h", "minimum booking")}
       ${metric(formatCurrency(state.settings.pricing.courtHourlyRate), "court hourly rate")}
-      ${metric("30m", "start intervals")}
+      ${metric("30m", "increments after the first hour")}
     </section>
     <div class="marquee" aria-hidden="true"><span>SEASON BLOCKS FOR CLUBS · PRIVATE LESSONS 1–2 / 3 / 4 / 5+ · WEIGHT TRAINING &amp; STRETCHING ROOM · INVOICED AFTER PLAY · OPEN 7 DAYS ·&nbsp;</span></div>
     <section class="workspace map-section">
       <div class="workspace-head">
         <div>
           <p class="eyebrow">Facility map</p>
-          <h2>Nine courts plus a dedicated trainer gym</h2>
+          <h2>Nine courts plus a rentable training room</h2>
         </div>
       </div>
       ${renderFacilityMap({ interactive: isApprovedMember() })}
