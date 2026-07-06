@@ -1063,7 +1063,7 @@ function renderHero() {
       <div class="hero-copy">
         <p class="eyebrow">Nine courts · One roof · Chantilly, VA</p>
         <h1>Where <em class="accent-red">every serve</em> finds a <em class="accent-blue">court.</em></h1>
-        <p class="hero-text">Reserve PVC sport-tile courts from one hour, in 30-minute steps. Run private lessons and camps &amp; clinics on court, book private or group training in the Weight Training &amp; Stretching Room, and manage your club's whole season from one schedule. Invoices arrive after you play.</p>
+        <p class="hero-text">Reserve PVC sport-tile courts from one hour, in 30-minute steps. Run private lessons and camps &amp; clinics on court, instructors can rent the Weight Training &amp; Stretching Room — space and equipment — for their own private or group training, and clubs manage their whole season from one schedule. Invoices arrive after you play.</p>
         <div class="hero-actions">
           ${state.user ? "" : `<button type="button" class="primary-action" data-view="signup">Join the roster</button>`}
           ${state.user ? "" : `<button type="button" class="secondary-action" data-view="login">Log in</button>`}
@@ -1072,7 +1072,7 @@ function renderHero() {
       </div>
       <aside class="crest-card" aria-label="A to Z Volleyball Center">
         <img src="/atoz-volleyball-logo.png" alt="A to Z Volleyball Center logo">
-        <svg viewBox="0 0 400 240" role="img" aria-label="Court in facility colors"><rect width="400" height="240" rx="8" fill="#2aa9e0"/><rect x="28" y="22" width="344" height="196" fill="#de1f26" stroke="#f5c400" stroke-width="4"/><line x1="200" y1="22" x2="200" y2="218" stroke="#f5c400" stroke-width="4"/><line x1="140" y1="22" x2="140" y2="218" stroke="#f5c400" stroke-width="2" stroke-dasharray="8 6"/><line x1="260" y1="22" x2="260" y2="218" stroke="#f5c400" stroke-width="2" stroke-dasharray="8 6"/></svg>
+        <svg viewBox="0 0 400 240" role="img" aria-label="Court in facility colors"><rect width="400" height="240" rx="8" fill="#2aa9e0"/><rect x="28" y="22" width="344" height="196" fill="#de1f26" stroke="#ffffff" stroke-width="4"/><line x1="200" y1="22" x2="200" y2="218" stroke="#ffffff" stroke-width="4"/><line x1="140" y1="22" x2="140" y2="218" stroke="#ffffff" stroke-width="2" stroke-dasharray="8 6"/><line x1="260" y1="22" x2="260" y2="218" stroke="#ffffff" stroke-width="2" stroke-dasharray="8 6"/></svg>
         <div class="crest-cap">CHERRY COURTS · SKYBLUE APRONS · GOLD LINES</div>
         <div class="crest-ring">
           <b class="ring-royal">9</b><b class="ring-cherry">1h</b><b class="ring-gold">30</b><b class="ring-navy">7</b>
@@ -1092,7 +1092,7 @@ function renderHomeView() {
     <section class="tile-grid" aria-label="What you can do here">
       <article class="tile tile-royal"><i class="ph-bold ph-calendar-check"></i><h3>Live schedule</h3><p>Approved members see every open slot across nine courts and the rentable Weight Training &amp; Stretching Room.</p></article>
       <article class="tile tile-cherry"><i class="ph-bold ph-users-three"></i><h3>Club season blocks</h3><p>Two courts, every Monday and Wednesday at 6? Locked for the season, invoiced after play.</p></article>
-      <article class="tile tile-gold"><i class="ph-bold ph-chalkboard-teacher"></i><h3>Lessons, camps &amp; training</h3><p>Private lessons and camps &amp; clinics on court; private or group training in the weight room. Editable up to 36 hours before.</p></article>
+      <article class="tile tile-gold"><i class="ph-bold ph-chalkboard-teacher"></i><h3>Lessons, camps &amp; training</h3><p>Private lessons and camps &amp; clinics on court. Instructors rent the weight room — space &amp; equipment — for their own training sessions.</p></article>
     </section>
     <p class="small-copy access-note">Scheduling opens after account approval — the front desk reviews every new account before booking unlocks.</p>
     <section class="metric-row" aria-label="Facility metrics">
@@ -1101,7 +1101,7 @@ function renderHomeView() {
       ${metric(formatCurrency(state.settings.pricing.courtHourlyRate), "court hourly rate", "receipt")}
       ${metric("30m", "increments after the first hour", "arrows-left-right")}
     </section>
-    <div class="marquee" aria-hidden="true"><span>SEASON BLOCKS FOR CLUBS · PRIVATE LESSONS 1–2 / 3 / 4 / 5+ · CAMPS &amp; CLINICS · PRIVATE &amp; GROUP TRAINING IN THE WEIGHT ROOM · INVOICED AFTER PLAY · OPEN 7 DAYS ·&nbsp;</span></div>
+    <div class="marquee" aria-hidden="true"><span>SEASON BLOCKS FOR CLUBS · PRIVATE LESSONS 1–2 / 3 / 4 / 5+ · CAMPS &amp; CLINICS · WEIGHT ROOM SPACE &amp; EQUIPMENT RENTAL FOR INSTRUCTORS · INVOICED AFTER PLAY · OPEN 7 DAYS ·&nbsp;</span></div>
     <section class="workspace map-section">
       <div class="workspace-head">
         <div>
@@ -1249,7 +1249,7 @@ function renderProgramsView() {
       <div class="program-grid">
         ${program("Court rentals", "Court reservations for approved members, teams, and coaches.", `From ${formatCurrency(state.settings.pricing.courtHourlyRate)}/hr`, isApprovedMember() ? "Book court" : "Log in")}
         ${program("Private lessons", "Coach-led on-court sessions for 1-2, 3, 4, or 5+ players.", `From ${formatCurrency(state.settings.pricing.courtHourlyRate)}/hr`, isApprovedMember() ? "Book a lesson" : "Log in")}
-        ${program("Private & group training", "Strength and conditioning in the Weight Training & Stretching Room.", `From ${formatCurrency(state.settings.pricing.gymHourlyRate)}/hr`, isApprovedMember() ? "Book training" : "Log in")}
+        ${program("Weight room rental", "Space & equipment rental in the Weight Training & Stretching Room — rented by instructors for their own private or group training.", `From ${formatCurrency(state.settings.pricing.gymHourlyRate)}/hr`, isApprovedMember() ? "Rent the room" : "Log in")}
         ${program("Team blocks", "Season-long fixed schedules for clubs and recurring practices.", "Managed schedules", "Contact us")}
         ${program("Camps & Clinics", "Multi-player skills camps and clinics at their own hourly rate.", "Camp rate", isApprovedMember() ? "Book a camp" : "Log in")}
       </div>
@@ -1336,7 +1336,7 @@ function renderBookingView() {
             Resource
             <select data-control="resourceType">
               <option value="court" ${state.resourceType === "court" ? "selected" : ""}>Court</option>
-              <option value="trainer" ${state.resourceType === "trainer" ? "selected" : ""}>Trainer gym</option>
+              ${!shouldUseLiveAuth() || memberContextByKey(state.bookingContextKey)?.type === "private" ? `<option value="trainer" ${state.resourceType === "trainer" ? "selected" : ""}>Weight room — space & equipment rental (instructors)</option>` : ""}
             </select>
           </label>
           <label>
@@ -1397,7 +1397,7 @@ function renderBookingView() {
           <h3>${formatDateLabel(state.date)}</h3>
           <dl>
             <div><dt>Time</dt><dd>${formatTime(state.time)}-${formatTime(addMinutes(state.time, state.durationMinutes))}</dd></div>
-            <div><dt>Resource</dt><dd>${state.resourceType === "trainer" ? "Trainer gym" : labelCourt(state.selectedCourt)}</dd></div>
+            <div><dt>Resource</dt><dd>${state.resourceType === "trainer" ? "Weight room" : labelCourt(state.selectedCourt)}</dd></div>
             ${bookingSeasonPrice ? `<div><dt>Season</dt><dd>${escapeHtml(seasonPriceLabel(bookingSeasonPrice))}</dd></div>` : ""}
             <div><dt>Hourly rate</dt><dd>${formatCurrency(estimatedRate)}</dd></div>
             <div><dt>Estimated due</dt><dd>${formatCurrency(estimatedDue)}</dd></div>
@@ -1434,7 +1434,7 @@ function renderMyBookingsView() {
             return `
               <div class="list-row">
                 <span>
-                  <strong>${reservation.resourceType === "court" ? `Court ${reservation.courtNumber}` : "Trainer gym"}</strong>
+                  <strong>${reservation.resourceType === "court" ? `Court ${reservation.courtNumber}` : "Weight room"}</strong>
                   <small>${formatShortDate(reservation.start)} ${formatShortTime(reservation.start)}-${formatShortTime(reservation.end)} · ${escapeHtml(reservation.teamName ?? "")}${reservation.lessonPlayerBracket ? ` · ${bracketLabel(reservation.lessonPlayerBracket)}` : ""}</small>
                 </span>
                 <span class="row-actions">
@@ -1467,7 +1467,7 @@ function renderMyBookingsView() {
       <div class="stack-list">
         ${bookings.length ? bookings.map((booking) => `
           <div class="list-row">
-            <span><strong>${booking.resourceType === "court" ? labelCourt(booking.courtId) : "Trainer gym"}</strong><small>${formatShortDate(booking.start)} ${formatShortTime(booking.start)}-${formatShortTime(booking.end)}</small></span>
+            <span><strong>${booking.resourceType === "court" ? labelCourt(booking.courtId) : "Weight room"}</strong><small>${formatShortDate(booking.start)} ${formatShortTime(booking.start)}-${formatShortTime(booking.end)}</small></span>
             <span class="status-pill ${isBookingPaid(booking) ? "is-open" : "is-due"}">${isBookingPaid(booking) ? "paid" : "due"}</span>
           </div>
         `).join("") : `<p class="small-copy">No reservations yet.</p>`}

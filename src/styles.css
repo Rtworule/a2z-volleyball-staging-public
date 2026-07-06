@@ -2211,7 +2211,7 @@ h1, h2, .hero h1, .brand-name, .metric strong {
 
 /* Facility map in true court colors (static); scheduling states unchanged */
 .facility-map .map-court rect { fill: #de1f26; stroke: #2aa9e0; stroke-width: 6; }
-.facility-map .map-net { stroke: #f5c400; stroke-dasharray: none; stroke-width: 3; }
+.facility-map .map-net { stroke: #ffffff; stroke-dasharray: none; stroke-width: 3; }
 .facility-map .map-label { fill: #ffffff; }
 .facility-map .map-status { fill: #ffe9ec; }
 .facility-map .map-court.open rect { fill: #cde8cf; stroke: #2f7d3b; }

@@ -108,3 +108,12 @@ test("Camps & Clinics is a bookable players-attending option with its own rate",
   const migration = await readFile(new URL("../supabase/migrations/20260710100000_camps_clinics_bracket.sql", import.meta.url), "utf8");
   assert.match(migration, /'camps'/);
 });
+
+test("weight room is instructor space & equipment rental with white court lines", async () => {
+  assert.match(appSource, /space & equipment rental/i);
+  assert.match(appSource, /type === "private" \? `<option value="trainer"/);
+  const css = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
+  assert.match(css, /\.map-net \{ stroke: #ffffff/);
+  const migration = await readFile(new URL("../supabase/migrations/20260711100000_weight_room_instructor_rental.sql", import.meta.url), "utf8");
+  assert.match(migration, /instructors only/);
+});
