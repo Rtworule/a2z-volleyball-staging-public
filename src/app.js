@@ -1063,7 +1063,7 @@ function renderHero() {
       <div class="hero-copy">
         <p class="eyebrow">Nine courts · One roof · Chantilly, VA</p>
         <h1>Where <em class="accent-red">every serve</em> finds a <em class="accent-blue">court.</em></h1>
-        <p class="hero-text">Reserve PVC sport-tile courts from one hour, in 30-minute steps. Run private lessons on court or rent the Weight Training &amp; Stretching Room, and manage your club's whole season from one schedule. Invoices arrive after you play.</p>
+        <p class="hero-text">Reserve PVC sport-tile courts from one hour, in 30-minute steps. Run private lessons and camps &amp; clinics on court, book private or group training in the Weight Training &amp; Stretching Room, and manage your club's whole season from one schedule. Invoices arrive after you play.</p>
         <div class="hero-actions">
           ${state.user ? "" : `<button type="button" class="primary-action" data-view="signup">Join the roster</button>`}
           ${state.user ? "" : `<button type="button" class="secondary-action" data-view="login">Log in</button>`}
@@ -1092,7 +1092,7 @@ function renderHomeView() {
     <section class="tile-grid" aria-label="What you can do here">
       <article class="tile tile-royal"><i class="ph-bold ph-calendar-check"></i><h3>Live schedule</h3><p>Approved members see every open slot across nine courts and the rentable Weight Training &amp; Stretching Room.</p></article>
       <article class="tile tile-cherry"><i class="ph-bold ph-users-three"></i><h3>Club season blocks</h3><p>Two courts, every Monday and Wednesday at 6? Locked for the season, invoiced after play.</p></article>
-      <article class="tile tile-gold"><i class="ph-bold ph-chalkboard-teacher"></i><h3>Coach lessons</h3><p>On court or in the training room, sized 1–2 to 5+ players, editable up to 36 hours before.</p></article>
+      <article class="tile tile-gold"><i class="ph-bold ph-chalkboard-teacher"></i><h3>Lessons, camps &amp; training</h3><p>Private lessons and camps &amp; clinics on court; private or group training in the weight room. Editable up to 36 hours before.</p></article>
     </section>
     <p class="small-copy access-note">Scheduling opens after account approval — the front desk reviews every new account before booking unlocks.</p>
     <section class="metric-row" aria-label="Facility metrics">
@@ -1101,7 +1101,7 @@ function renderHomeView() {
       ${metric(formatCurrency(state.settings.pricing.courtHourlyRate), "court hourly rate", "receipt")}
       ${metric("30m", "increments after the first hour", "arrows-left-right")}
     </section>
-    <div class="marquee" aria-hidden="true"><span>SEASON BLOCKS FOR CLUBS · PRIVATE LESSONS 1–2 / 3 / 4 / 5+ · WEIGHT TRAINING &amp; STRETCHING ROOM · INVOICED AFTER PLAY · OPEN 7 DAYS ·&nbsp;</span></div>
+    <div class="marquee" aria-hidden="true"><span>SEASON BLOCKS FOR CLUBS · PRIVATE LESSONS 1–2 / 3 / 4 / 5+ · CAMPS &amp; CLINICS · PRIVATE &amp; GROUP TRAINING IN THE WEIGHT ROOM · INVOICED AFTER PLAY · OPEN 7 DAYS ·&nbsp;</span></div>
     <section class="workspace map-section">
       <div class="workspace-head">
         <div>
@@ -1248,9 +1248,10 @@ function renderProgramsView() {
       </div>
       <div class="program-grid">
         ${program("Court rentals", "Court reservations for approved members, teams, and coaches.", `From ${formatCurrency(state.settings.pricing.courtHourlyRate)}/hr`, isApprovedMember() ? "Book court" : "Log in")}
-        ${program("Private lessons", "One-on-one trainer sessions with two simultaneous gym slots available.", `From ${formatCurrency(state.settings.pricing.gymHourlyRate)}/hr`, isApprovedMember() ? "Book trainer" : "Log in")}
-        ${program("Team blocks", "Season-long fixed schedules for clubs, camps, and recurring practices.", "Managed schedules", "Contact us")}
-        ${program("Tournaments", "Multi-court event holds with payment tracking and closure controls.", "Custom", "Plan event")}
+        ${program("Private lessons", "Coach-led on-court sessions for 1-2, 3, 4, or 5+ players.", `From ${formatCurrency(state.settings.pricing.courtHourlyRate)}/hr`, isApprovedMember() ? "Book a lesson" : "Log in")}
+        ${program("Private & group training", "Strength and conditioning in the Weight Training & Stretching Room.", `From ${formatCurrency(state.settings.pricing.gymHourlyRate)}/hr`, isApprovedMember() ? "Book training" : "Log in")}
+        ${program("Team blocks", "Season-long fixed schedules for clubs and recurring practices.", "Managed schedules", "Contact us")}
+        ${program("Camps & Clinics", "Multi-player skills camps and clinics at their own hourly rate.", "Camp rate", isApprovedMember() ? "Book a camp" : "Log in")}
       </div>
     </section>
   `;
@@ -2774,7 +2775,7 @@ function renderClosedDaysSettings() {
         </label>
         <label>
           Reason
-          <input data-closure="reason" value="${escapeHtml(closure.reason)}" placeholder="Holiday, maintenance, tournament">
+          <input data-closure="reason" value="${escapeHtml(closure.reason)}" placeholder="Holiday, maintenance, private event">
         </label>
         <button type="button" data-action="create-closure">Add Closed Day</button>
       </div>
