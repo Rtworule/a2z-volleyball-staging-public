@@ -1434,7 +1434,7 @@ function renderMyBookingsView() {
               <div class="list-row">
                 <span>
                   <strong>${reservation.resourceType === "court" ? `Court ${reservation.courtNumber}` : "Trainer gym"}</strong>
-                  <small>${formatShortDate(reservation.start)} ${formatShortTime(reservation.start)}-${formatShortTime(reservation.end)} · ${escapeHtml(reservation.teamName ?? "")}${reservation.lessonPlayerBracket ? ` · ${reservation.lessonPlayerBracket} players` : ""}</small>
+                  <small>${formatShortDate(reservation.start)} ${formatShortTime(reservation.start)}-${formatShortTime(reservation.end)} · ${escapeHtml(reservation.teamName ?? "")}${reservation.lessonPlayerBracket ? ` · ${bracketLabel(reservation.lessonPlayerBracket)}` : ""}</small>
                 </span>
                 <span class="row-actions">
                   <span class="status-pill ${isPaid ? "is-open" : "is-due"}">${isPaid ? "paid" : "invoice due"}</span>
@@ -7349,6 +7349,18 @@ function memberContextByKey(key) {
   return state.memberContexts.find((context) => context.key === key) ?? null;
 }
 
+const LESSON_BRACKETS = [
+  { value: "1-2", label: "1-2 players" },
+  { value: "3", label: "3 players" },
+  { value: "4", label: "4 players" },
+  { value: "5+", label: "5+ players" },
+  { value: "camps", label: "Camps & Clinics" }
+];
+
+function bracketLabel(value) {
+  return LESSON_BRACKETS.find((entry) => entry.value === value)?.label ?? value;
+}
+
 function renderMemberBookingContextFields() {
   if (!state.memberContexts.length) {
     return `<p class="small-copy">Your account is approved but not linked to a club or coach profile yet. Contact the front desk so reservations can be assigned correctly.</p>`;
@@ -7365,7 +7377,7 @@ function renderMemberBookingContextFields() {
       <label>
         Players attending
         <select data-control="lessonBracket">
-          ${["1-2", "3", "4", "5+"].map((bracket) => `<option value="${bracket}" ${state.lessonBracket === bracket ? "selected" : ""}>${bracket} players</option>`).join("")}
+          ${LESSON_BRACKETS.map((bracket) => `<option value="${bracket.value}" ${state.lessonBracket === bracket.value ? "selected" : ""}>${bracket.label}</option>`).join("")}
         </select>
       </label>
       ${renderPrivateBillingStatus(context)}

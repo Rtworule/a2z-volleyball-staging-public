@@ -18,7 +18,9 @@ test("member cancellations go through member_cancel_reservation RPC", () => {
 });
 
 test("private lesson bracket options match the database check constraint", () => {
-  assert.match(appSource, /\["1-2", "3", "4", "5\+"\]/);
+  for (const value of ["1-2", "3", "4", "5+", "camps"]) {
+    assert.ok(appSource.includes(`value: "${value}"`), `missing bracket ${value}`);
+  }
 });
 
 test("facility map matches Exhibit C: two columns of four beside vertical court 1", () => {
@@ -98,4 +100,11 @@ test("card-on-file and cancellation tiers are wired in the UI", () => {
   assert.match(appSource, /credit card on file is required for private lessons/i);
   assert.match(appSource, /cancellationFeePercentFor/);
   assert.match(appSource, /50% between 36 and 24 hours/);
+});
+
+test("Camps & Clinics is a bookable players-attending option with its own rate", async () => {
+  assert.match(appSource, /Camps & Clinics/);
+  assert.match(appSource, /value: "camps"/);
+  const migration = await readFile(new URL("../supabase/migrations/20260710100000_camps_clinics_bracket.sql", import.meta.url), "utf8");
+  assert.match(migration, /'camps'/);
 });
