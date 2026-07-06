@@ -2,21 +2,21 @@
   color-scheme: light;
   /* A2Z brand palette from the facility drawings: crimson courts on azure
      aprons with gold lines, navy ink. Sideline x Summer League direction. */
-  --ink: #1b2a4a;
+  --ink: #1b2350;
   --muted: #5a6a80;
   --paper: #fdfaf2;
   --surface: #f7f5ee;
   --panel: #ffffff;
   --line: #e2dcc9;
-  --azure: #2aa9e0;
-  --teal: #1d7db8;       /* deep azure: primary interactive color */
-  --teal-dark: #155e8c;
-  --coral: #c8374a;      /* court crimson: primary CTA */
-  --coral-press: #9c2334;
-  --gold: #f2c230;       /* court-line gold */
+  --azure: #2aa9e0;   /* SkyBlue court mat */
+  --teal: #1e6bb0;       /* logo royal blue: primary interactive color */
+  --teal-dark: #155086;
+  --coral: #de1f26;      /* logo cherry red: primary CTA */
+  --coral-press: #a90f15;
+  --gold: #f5c400;       /* logo gold */
   --green: #2e7d55;
   --red: #a84632;
-  --shadow: 0 18px 44px rgb(27 42 74 / 0.13);
+  --shadow: 0 18px 44px rgb(27 35 80 / 0.13);
 }
 
 * {
@@ -2172,7 +2172,7 @@ h1, h2, .hero h1, .brand-name, .metric strong {
   background: var(--coral);
   box-shadow: 0 5px 0 var(--coral-press);
 }
-.primary-action:hover { background: #d24558; }
+.primary-action:hover { background: #ea3a40; }
 .primary-action:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--coral-press); }
 @media (prefers-reduced-motion: reduce) {
   .primary-action:active { transform: none; }
@@ -2210,8 +2210,8 @@ h1, h2, .hero h1, .brand-name, .metric strong {
 .home-feature:nth-child(4) i { background: var(--ink); }
 
 /* Facility map in true court colors (static); scheduling states unchanged */
-.facility-map .map-court rect { fill: #c8374a; stroke: #2aa9e0; stroke-width: 6; }
-.facility-map .map-net { stroke: #f2c230; stroke-dasharray: none; stroke-width: 3; }
+.facility-map .map-court rect { fill: #de1f26; stroke: #2aa9e0; stroke-width: 6; }
+.facility-map .map-net { stroke: #f5c400; stroke-dasharray: none; stroke-width: 3; }
 .facility-map .map-label { fill: #ffffff; }
 .facility-map .map-status { fill: #ffe9ec; }
 .facility-map .map-court.open rect { fill: #cde8cf; stroke: #2f7d3b; }

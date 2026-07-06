@@ -1,31 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
   <defs>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#0d1b2a"/><stop offset="1" stop-color="#1b3a5c"/>
+      <stop offset="0" stop-color="#10173d"/><stop offset="1" stop-color="#1b2350"/>
     </linearGradient>
     <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#c9853f"/><stop offset="1" stop-color="#a05f24"/>
+      <stop offset="0" stop-color="#2f80c4"/><stop offset="1" stop-color="#175a99"/>
     </linearGradient>
     <radialGradient id="spot" cx="0.5" cy="0" r="1">
       <stop offset="0" stop-color="#ffffff" stop-opacity="0.35"/><stop offset="0.6" stop-color="#ffffff" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="ballshade" cx="0.35" cy="0.3" r="1">
-      <stop offset="0" stop-color="#ffffff"/><stop offset="0.55" stop-color="#f2d43d"/><stop offset="1" stop-color="#c9a10e"/>
+      <stop offset="0" stop-color="#ffffff"/><stop offset="0.55" stop-color="#f5c400"/><stop offset="1" stop-color="#c79e00"/>
     </radialGradient>
   </defs>
   <rect width="1600" height="900" fill="url(#sky)"/>
   <ellipse cx="800" cy="80" rx="900" ry="380" fill="url(#spot)"/>
   <rect y="560" width="1600" height="340" fill="url(#floor)"/>
   <g stroke="#f7f2e9" stroke-width="8" opacity="0.9">
-    <path d="M120 900 L520 620 L1080 620 L1480 900" fill="#b8722f"/>
+    <path d="M120 900 L520 620 L1080 620 L1480 900" fill="#de1f26"/>
     <line x1="520" y1="620" x2="1080" y2="620"/>
     <line x1="120" y1="900" x2="520" y2="620"/>
     <line x1="1480" y1="900" x2="1080" y2="620"/>
     <line x1="320" y1="760" x2="1280" y2="760"/>
   </g>
   <g>
-    <rect x="384" y="330" width="14" height="330" rx="7" fill="#28455f"/>
-    <rect x="1202" y="330" width="14" height="330" rx="7" fill="#28455f"/>
+    <rect x="384" y="330" width="14" height="330" rx="7" fill="#1b2350"/>
+    <rect x="1202" y="330" width="14" height="330" rx="7" fill="#1b2350"/>
     <rect x="392" y="350" width="816" height="14" fill="#f7f2e9"/>
     <rect x="392" y="470" width="816" height="10" fill="#f7f2e9"/>
     <g stroke="#dfe8ef" stroke-width="3" opacity="0.85">
@@ -35,9 +35,9 @@
   </g>
   <g transform="translate(1050 250)">
     <circle r="86" fill="url(#ballshade)"/>
-    <path d="M-86 0 A86 86 0 0 1 86 0" fill="none" stroke="#1d5fa8" stroke-width="14"/>
-    <path d="M-60 -60 Q0 -10 60 -60" fill="none" stroke="#1d5fa8" stroke-width="12"/>
-    <path d="M-60 62 Q0 8 60 62" fill="none" stroke="#d23b2f" stroke-width="12"/>
+    <path d="M-86 0 A86 86 0 0 1 86 0" fill="none" stroke="#1e6bb0" stroke-width="14"/>
+    <path d="M-60 -60 Q0 -10 60 -60" fill="none" stroke="#1e6bb0" stroke-width="12"/>
+    <path d="M-60 62 Q0 8 60 62" fill="none" stroke="#de1f26" stroke-width="12"/>
     <circle r="86" fill="none" stroke="#8a6d00" stroke-width="4" opacity="0.6"/>
   </g>
   

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" preserveAspectRatio="xMidYMid slice">
+ <defs>
+  <linearGradient id="pr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8342c"/><stop offset="1" stop-color="#c81118"/></linearGradient>
+  <linearGradient id="pb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2f80c4"/><stop offset="1" stop-color="#175a99"/></linearGradient>
+  <linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd21c"/><stop offset="1" stop-color="#e9b400"/></linearGradient>
+  <g id="mark" opacity="0.95">
+   <circle r="26" fill="#1B2350" stroke="#fff" stroke-width="3"/>
+   <path d="M-26 0 A26 26 0 0 1 26 0" fill="none" stroke="#fff" stroke-width="3"/>
+   <path d="M-18 -18 Q0 -4 18 -18" fill="none" stroke="#fff" stroke-width="3"/>
+   <path d="M-18 18 Q0 6 18 18" fill="none" stroke="#fff" stroke-width="3"/>
+  </g>
+ </defs>
+ <!-- RED: server -->
+ <rect x="0" y="0" width="392" height="560" fill="url(#pr)"/>
+ <g fill="#ffffff" opacity="0.92" transform="translate(196 300) scale(1.15)">
+  <circle cx="18" cy="-158" r="26"/>
+  <path d="M6 -132 q14 18 30 4 l58 -64 q14 -16 30 -2 q14 14 -2 30 l-64 62 q-22 20 -48 14 l-4 96 30 118 q6 24 -18 30 q-22 4 -28 -20 l-28 -110 -22 108 q-6 24 -28 20 q-24 -6 -18 -30 l28 -114 -2 -100 q-28 -12 -34 -44 l-8 -54 q-4 -24 18 -28 q22 -4 26 20 l8 46 z"/>
+  <circle cx="128" cy="-208" r="22" opacity="0.98"/>
+ </g>
+ <use href="#mark" x="196" y="510"/>
+ <!-- BLUE: spiker -->
+ <rect x="404" y="0" width="392" height="560" fill="url(#pb)"/>
+ <g fill="#ffffff" opacity="0.92" transform="translate(600 276) scale(1.2)">
+  <circle cx="4" cy="-166" r="26"/>
+  <path d="M-8 -140 q14 18 28 6 l40 -78 q10 -20 30 -10 q18 10 8 30 l-44 84 q-14 26 -44 26 l-6 92 34 108 q8 24 -16 30 q-22 6 -30 -18 l-30 -102 -24 104 q-6 24 -28 18 q-24 -6 -16 -30 l30 -106 -2 -96 q-30 -12 -34 -46 l-6 -48 q-2 -24 20 -26 q22 -2 24 20 l6 42 z"/>
+  <circle cx="86" cy="-238" r="22" opacity="0.98"/>
+ </g>
+ <use href="#mark" x="600" y="510"/>
+ <!-- GOLD: blocker -->
+ <rect x="808" y="0" width="392" height="560" fill="url(#pg)"/>
+ <g fill="#ffffff" opacity="0.95" transform="translate(1004 292) scale(1.15)">
+  <circle cx="0" cy="-172" r="26"/>
+  <path d="M-22 -148 q22 20 44 0 l10 -56 q4 -24 26 -20 q22 4 18 28 l-12 62 q-6 32 -38 42 l-2 96 30 112 q6 24 -18 30 q-22 4 -28 -20 l-28 -106 -26 106 q-6 24 -28 20 q-24 -6 -18 -30 l30 -112 -2 -94 q-32 -10 -38 -44 l-10 -60 q-4 -24 18 -28 q22 -4 26 20 l10 54 z"/>
+  <circle cx="0" cy="-244" r="22" opacity="0.98"/>
+ </g>
+ <use href="#mark" x="1004" y="510"/>
+</svg>

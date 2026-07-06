@@ -1,23 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
   <defs>
     <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#d69a55"/><stop offset="1" stop-color="#b06e2c"/>
+      <stop offset="0" stop-color="#2f80c4"/><stop offset="1" stop-color="#175a99"/>
     </linearGradient>
     <radialGradient id="ball2" cx="0.35" cy="0.28" r="1">
       <stop offset="0" stop-color="#ffffff"/><stop offset="0.5" stop-color="#f5f1e6"/><stop offset="1" stop-color="#cfc4a6"/>
     </radialGradient>
   </defs>
   <rect width="1200" height="800" fill="url(#wood)"/>
-  <g stroke="#8a5a20" stroke-width="3" opacity="0.35">
+  <g stroke="#1b4f80" stroke-width="3" opacity="0.35">
     <path d="M0 100 H1200 M0 220 H1200 M0 340 H1200 M0 460 H1200 M0 580 H1200 M0 700 H1200"/>
   </g>
   <rect x="0" y="470" width="1200" height="26" fill="#f7f2e9"/>
-  <ellipse cx="620" cy="600" rx="240" ry="46" fill="#5c3a12" opacity="0.35"/>
+  <ellipse cx="620" cy="600" rx="240" ry="46" fill="#0e2a4a" opacity="0.35"/>
   <g transform="translate(600 400)">
     <circle r="190" fill="url(#ball2)"/>
-    <path d="M-190 0 A190 190 0 0 1 190 0" fill="none" stroke="#1d5fa8" stroke-width="26"/>
-    <path d="M-134 -134 Q0 -30 134 -134" fill="none" stroke="#1d5fa8" stroke-width="22"/>
-    <path d="M-134 138 Q0 22 134 138" fill="none" stroke="#d23b2f" stroke-width="22"/>
+    <path d="M-190 0 A190 190 0 0 1 190 0" fill="none" stroke="#1e6bb0" stroke-width="26"/>
+    <path d="M-134 -134 Q0 -30 134 -134" fill="none" stroke="#1e6bb0" stroke-width="22"/>
+    <path d="M-134 138 Q0 22 134 138" fill="none" stroke="#de1f26" stroke-width="22"/>
     <path d="M0 -190 Q60 -60 0 190" fill="none" stroke="#c9b98e" stroke-width="8" opacity="0.7"/>
     <circle r="190" fill="none" stroke="#8a6d3a" stroke-width="5" opacity="0.5"/>
   </g>

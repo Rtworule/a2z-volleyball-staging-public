@@ -3,7 +3,7 @@ import { supabase, supabaseConfig } from "./supabaseClient.js";
 
 const HERO_IMAGE = "/hero-court.svg";
 const BALL_IMAGE = "/ball-court.svg";
-const TRAINING_IMAGE = "/training.svg";
+const TRAINING_IMAGE = "/window-panels.svg";
 const FACILITY_TIMEZONE = "America/New_York";
 const DEFAULT_MESSAGE_DISPLAY_SECONDS = 5;
 const isLocalPreview = ["", "localhost", "127.0.0.1"].includes(window.location.hostname) || window.location.protocol === "file:";

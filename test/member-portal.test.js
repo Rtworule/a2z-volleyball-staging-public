@@ -66,7 +66,7 @@ test("social login uses Supabase OAuth with a site redirect", () => {
 test("site imagery is local volleyball artwork", () => {
   assert.match(appSource, /const HERO_IMAGE = "\/hero-court\.svg"/);
   assert.match(appSource, /const BALL_IMAGE = "\/ball-court\.svg"/);
-  assert.match(appSource, /const TRAINING_IMAGE = "\/training\.svg"/);
+  assert.match(appSource, /const TRAINING_IMAGE = "\/window-panels\.svg"/);
   assert.doesNotMatch(appSource, /pexels\.com/);
 });
 
@@ -79,12 +79,16 @@ test("private lessons are editable through member_update_reservation with a 36h 
 test("combined Sideline x Summer League design is applied", async () => {
   const css = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
-  assert.match(css, /--coral: #c8374a/);
+  assert.match(css, /--coral: #de1f26/);
   assert.match(css, /--azure: #2aa9e0/);
-  assert.match(css, /--gold: #f2c230/);
+  assert.match(css, /--gold: #f5c400/);
   assert.match(css, /marquee-roll/);
   assert.match(html, /Bricolage\+Grotesque/);
   assert.match(html, /phosphor-icons/);
   assert.match(appSource, /class="marquee"/);
   assert.match(appSource, /Chantilly, VA 20152/);
+});
+
+test("brand graphics from the logo package are wired in", () => {
+  assert.match(appSource, /const TRAINING_IMAGE = "\/window-panels\.svg"/);
 });
