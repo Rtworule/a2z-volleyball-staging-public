@@ -1126,7 +1126,7 @@ function renderHomeView() {
           </div>
         `).join("")}
       </div>
-      <p class="small-copy">Court schedules and reservations are available to approved member accounts after sign-in. Invoices are sent after play — no online payment is required.</p><p class="small-copy address-line">44080 Little River Turnpike, Suite 100, Chantilly, VA 20152</p>
+      <p class="small-copy">Courts and the Weight Training &amp; Stretching Room rent during the same hours. Court schedules and reservations are available to approved member accounts after sign-in. Invoices are sent after play — no online payment is required.</p><p class="small-copy address-line">44080 Little River Turnpike, Suite 100, Chantilly, VA 20152</p>
     </section>
   `;
 }
