@@ -1059,18 +1059,26 @@ function renderHero() {
   }
 
   return `
-    <section class="hero public-hero" style="--hero-image: url('${HERO_IMAGE}')">
+    <section class="hero public-hero crest-hero">
       <div class="hero-copy">
-        <img class="hero-logo" src="/atoz-volleyball-logo.png" alt="A to Z Volleyball Center logo">
-        <p class="eyebrow">Indoor volleyball and performance center</p>
-        <h1>A to Z Volleyball Center</h1>
-        <p class="hero-text">Nine PVC sport-tile courts, a rentable Weight Training &amp; Stretching Room, private lessons, team rentals, camps, and tournament support under one roof.</p>
+        <p class="eyebrow">Nine courts · One roof · Chantilly, VA</p>
+        <h1>Where <em class="accent-red">every serve</em> finds a <em class="accent-blue">court.</em></h1>
+        <p class="hero-text">Reserve PVC sport-tile courts from one hour, in 30-minute steps. Run private lessons on court or rent the Weight Training &amp; Stretching Room, and manage your club's whole season from one schedule. Invoices arrive after you play.</p>
         <div class="hero-actions">
-          ${state.user ? "" : `<button type="button" class="primary-action" data-view="signup">Create an account</button>`}
+          ${state.user ? "" : `<button type="button" class="primary-action" data-view="signup">Join the roster</button>`}
           ${state.user ? "" : `<button type="button" class="secondary-action" data-view="login">Log in</button>`}
           <button type="button" class="secondary-action" data-view="programs">View programs</button>
         </div>
       </div>
+      <aside class="crest-card" aria-label="A to Z Volleyball Center">
+        <img src="/atoz-volleyball-logo.png" alt="A to Z Volleyball Center logo">
+        <svg viewBox="0 0 400 240" role="img" aria-label="Court in facility colors"><rect width="400" height="240" rx="8" fill="#2aa9e0"/><rect x="28" y="22" width="344" height="196" fill="#de1f26" stroke="#f5c400" stroke-width="4"/><line x1="200" y1="22" x2="200" y2="218" stroke="#f5c400" stroke-width="4"/><line x1="140" y1="22" x2="140" y2="218" stroke="#f5c400" stroke-width="2" stroke-dasharray="8 6"/><line x1="260" y1="22" x2="260" y2="218" stroke="#f5c400" stroke-width="2" stroke-dasharray="8 6"/></svg>
+        <div class="crest-cap">CHERRY COURTS · SKYBLUE APRONS · GOLD LINES</div>
+        <div class="crest-ring">
+          <b class="ring-royal">9</b><b class="ring-cherry">1h</b><b class="ring-gold">30</b><b class="ring-navy">7</b>
+        </div>
+        <div class="crest-cap muted">COURTS · MIN BOOKING · MIN STEPS · DAYS OPEN</div>
+      </aside>
     </section>
   `;
 }
@@ -1081,34 +1089,17 @@ function renderHomeView() {
   }
 
   return `
-    <section class="section-grid dashboard-grid">
-      <article class="panel lead-panel info-panel">
-        <div class="panel-heading">
-          <p class="eyebrow">Facility</p>
-          <h2>Volleyball space for players, coaches, clubs, and events.</h2>
-        </div>
-        <p class="small-copy">A2Z supports court rentals, private coaching, team practices, seasonal blocks, camps, and tournament operations.</p>
-        <div class="feature-list">
-          <span class="home-feature"><i class="ph-bold ph-volleyball"></i>Nine PVC sport-tile courts</span>
-          <span class="home-feature"><i class="ph-bold ph-barbell"></i>Weight Training &amp; Stretching Room</span>
-          <span class="home-feature"><i class="ph-bold ph-users-three"></i>Private lessons and team blocks</span>
-          <span class="home-feature"><i class="ph-bold ph-calendar-check"></i>Online member reservations</span>
-        </div>
-      </article>
-      <aside class="panel image-panel">
-        <img src="${BALL_IMAGE}" alt="Volleyball resting on an indoor court line">
-        <div>
-          <p class="eyebrow">Membership access</p>
-          <h2>Scheduling opens after account approval.</h2>
-          <p>Public visitors can learn about the facility and programs. Reservation tools appear only after an approved member signs in.</p>
-        </div>
-      </aside>
+    <section class="tile-grid" aria-label="What you can do here">
+      <article class="tile tile-royal"><i class="ph-bold ph-calendar-check"></i><h3>Live schedule</h3><p>Approved members see every open slot across nine courts and the rentable Weight Training &amp; Stretching Room.</p></article>
+      <article class="tile tile-cherry"><i class="ph-bold ph-users-three"></i><h3>Club season blocks</h3><p>Two courts, every Monday and Wednesday at 6? Locked for the season, invoiced after play.</p></article>
+      <article class="tile tile-gold"><i class="ph-bold ph-chalkboard-teacher"></i><h3>Coach lessons</h3><p>On court or in the training room, sized 1–2 to 5+ players, editable up to 36 hours before.</p></article>
     </section>
+    <p class="small-copy access-note">Scheduling opens after account approval — the front desk reviews every new account before booking unlocks.</p>
     <section class="metric-row" aria-label="Facility metrics">
-      ${metric(String(state.settings.courtCount), "volleyball courts")}
-      ${metric("1h", "minimum booking")}
-      ${metric(formatCurrency(state.settings.pricing.courtHourlyRate), "court hourly rate")}
-      ${metric("30m", "increments after the first hour")}
+      ${metric(String(state.settings.courtCount), "PVC sport-tile courts", "volleyball")}
+      ${metric("1h", "minimum booking", "clock")}
+      ${metric(formatCurrency(state.settings.pricing.courtHourlyRate), "court hourly rate", "receipt")}
+      ${metric("30m", "increments after the first hour", "arrows-left-right")}
     </section>
     <div class="marquee" aria-hidden="true"><span>SEASON BLOCKS FOR CLUBS · PRIVATE LESSONS 1–2 / 3 / 4 / 5+ · WEIGHT TRAINING &amp; STRETCHING ROOM · INVOICED AFTER PLAY · OPEN 7 DAYS ·&nbsp;</span></div>
     <section class="workspace map-section">
@@ -1398,7 +1389,7 @@ function renderBookingView() {
               </label>
             ` : ""}
           ` : ""}
-          <button type="button" class="primary-action full" data-action="book" ${slotAvailable || state.editingReservationId ? "" : "disabled"}>${state.editingReservationId ? "Update reservation" : "Confirm reservation"}</button>
+          <button type="button" class="primary-action full" data-action="book" ${(slotAvailable || state.editingReservationId) && !privateBookingBlocked() ? "" : "disabled"}>${state.editingReservationId ? "Update reservation" : "Confirm reservation"}</button>
         </form>
         <div class="panel receipt-panel">
           <p class="eyebrow">Reservation summary</p>
@@ -1447,10 +1438,12 @@ function renderMyBookingsView() {
                 </span>
                 <span class="row-actions">
                   <span class="status-pill ${isPaid ? "is-open" : "is-due"}">${isPaid ? "paid" : "invoice due"}</span>
-                  ${reservation.lessonPlayerBracket && !isPaid && isEditableWindow(reservation.start) ? `
-                    <button type="button" class="ghost-action" data-action="edit-reservation" data-reservation="${reservation.id}">Edit</button>
-                    <button type="button" class="ghost-action" data-action="cancel-reservation" data-reservation="${reservation.id}">Cancel</button>
-                  ` : reservation.lessonPlayerBracket && isFuture ? `<small class="field-tip">Changes within 36h: contact the front desk</small>`
+                  ${reservation.lessonPlayerBracket && !isPaid && isFuture ? `
+                    ${isEditableWindow(reservation.start)
+                      ? `<button type="button" class="ghost-action" data-action="edit-reservation" data-reservation="${reservation.id}">Edit</button>`
+                      : `<small class="field-tip">Edits within 36h: front desk</small>`}
+                    <button type="button" class="ghost-action" data-action="cancel-reservation" data-reservation="${reservation.id}">Cancel${isEditableWindow(reservation.start) ? "" : ` (${cancellationFeePercentFor(reservation.start)}% fee)`}</button>
+                  ` : reservation.lessonPlayerBracket ? ""
                     : isFuture ? `<small class="field-tip">Team practices: contact the front desk to change</small>` : ""}
                 </span>
               </div>
@@ -3030,8 +3023,8 @@ function navButton(view, label) {
   return `<button type="button" class="${state.view === view ? "active" : ""}" data-view="${view}">${label}</button>`;
 }
 
-function metric(value, label) {
-  return `<div class="metric"><strong>${value}</strong><span>${label}</span></div>`;
+function metric(value, label, icon) {
+  return `<div class="metric">${icon ? `<i class="ph-bold ph-${icon} metric-icon"></i>` : ""}<span class="metric-body"><strong>${value}</strong><span>${label}</span></span></div>`;
 }
 
 function program(title, copy, meta, action) {
@@ -7375,7 +7368,28 @@ function renderMemberBookingContextFields() {
           ${["1-2", "3", "4", "5+"].map((bracket) => `<option value="${bracket}" ${state.lessonBracket === bracket ? "selected" : ""}>${bracket} players</option>`).join("")}
         </select>
       </label>
+      ${renderPrivateBillingStatus(context)}
     ` : ""}
+  `;
+}
+
+function privateBookingBlocked() {
+  const context = memberContextByKey(state.bookingContextKey);
+  return Boolean(context && context.type === "private" && context.billingTerms !== "monthly" && !context.cardOnFile);
+}
+
+function renderPrivateBillingStatus(context) {
+  let billingLine;
+  if (context.billingTerms === "monthly") {
+    billingLine = `<p class="small-copy billing-ok">Monthly billing account — sessions and any fees are invoiced at the end of each month.</p>`;
+  } else if (context.cardOnFile) {
+    billingLine = `<p class="small-copy billing-ok">Card on file${context.cardLast4 ? ` ending in ${escapeHtml(context.cardLast4)}` : ""}. Sessions are invoiced after play; cancellation fees are charged to this card.</p>`;
+  } else {
+    billingLine = `<p class="small-copy billing-warning">A credit card on file is required for private lessons. Please contact the front desk to add one.</p>`;
+  }
+  return `
+    ${billingLine}
+    <p class="small-copy policy-line">Cancellation policy: free more than 36 hours before start · 50% between 36 and 24 hours · 100% within 24 hours.</p>
   `;
 }
 
@@ -7404,24 +7418,45 @@ function beginEditReservation(reservationId) {
   setView("book");
 }
 
+function cancellationFeePercentFor(startIso) {
+  const hoursOut = (new Date(startIso).getTime() - Date.now()) / 3600000;
+  if (hoursOut > 36) return 0;
+  if (hoursOut > 24) return 50;
+  return 100;
+}
+
 async function cancelMyReservation(reservationId) {
   if (!shouldUseLiveAuth() || !supabase || !reservationId) {
     return;
   }
-  const { error } = await supabase.rpc("member_cancel_reservation", { p_reservation_id: reservationId });
+  const reservation = state.myReservations.find((entry) => entry.id === reservationId);
+  if (reservation) {
+    const feePercent = cancellationFeePercentFor(reservation.start);
+    const feeAmount = ((Number(reservation.amount) || 0) * feePercent / 100).toFixed(2);
+    const message = feePercent === 0
+      ? "Cancel this lesson? You are more than 36 hours out, so there is no cancellation fee."
+      : `Cancel this lesson? A ${feePercent}% cancellation fee ($${feeAmount}) applies and will be charged to the card on file (or added to your monthly invoice).`;
+    if (!window.confirm(message)) {
+      return;
+    }
+  }
+  const { data, error } = await supabase.rpc("member_cancel_reservation", { p_reservation_id: reservationId });
   if (error) {
     state.notice = readableSupabaseError(error, "Could not cancel the reservation.");
     render();
     return;
   }
-  state.notice = "Reservation cancelled.";
+  const feePercent = Number(data?.cancellationFeePercent ?? 0);
+  state.notice = feePercent > 0
+    ? `Reservation cancelled. A ${feePercent}% fee ($${Number(data.cancellationFeeAmount).toFixed(2)}) ${data.cancellationFeeStatus === "invoiced" ? "will appear on your monthly invoice" : "will be charged to the card on file"}.`
+    : "Reservation cancelled. No fee — more than 36 hours before start.";
   await loadMemberPortal();
 }
 
 // ---------------------------------------------------------------------------
-// Facility map — Court 1 vertical top-left; trainer gym, office and locker
-// rooms below it; courts 2-9 to the right in two rows of four, arranged
-// clockwise starting from Court 2 at the bottom-left.
+// Facility map per Exhibit C — Court 1 vertical top-left; Weight Training &
+// Stretching Room, lobby/office below it; courts 2-9 to the right in two
+// columns of four (left column 2-5 top to bottom, right column 6-9).
 // ---------------------------------------------------------------------------
 
 function renderFacilityMap({ interactive = false } = {}) {
@@ -7451,29 +7486,31 @@ function renderFacilityMap({ interactive = false } = {}) {
     </g>
   `;
 
-  const topRow = [3, 4, 5, 6];
-  const bottomRow = [2, 9, 8, 7];
-  const columnWidth = 168;
-  const columnGap = 14;
+  const leftColumn = [2, 3, 4, 5];
+  const rightColumn = [6, 7, 8, 9];
+  const courtWidth = 344;
+  const courtHeight = 138;
+  const columnGap = 24;
+  const rowGap = 14;
   const rightStart = 224;
-  const rowHeight = 226;
 
   return `
     <figure class="facility-map" aria-label="Facility map">
-      <svg viewBox="0 0 960 520" xmlns="http://www.w3.org/2000/svg" role="img">
+      <svg viewBox="0 0 960 640" xmlns="http://www.w3.org/2000/svg" role="img">
         <g class="map-tile map-court vertical${courtClass(1)}" ${interactive ? `data-court="court-1" role="button" tabindex="0" aria-label="Court 1"` : ""}>
-          <rect x="16" y="16" width="188" height="290" rx="10"></rect>
-          <line x1="24" y1="161" x2="196" y2="161" class="map-net"></line>
-          <text x="110" y="150" class="map-label">Court 1</text>
-          ${availability ? `<text x="110" y="176" class="map-status">${courtClass(1).includes("open") ? "Open" : "Reserved"}</text>` : ""}
+          <rect x="16" y="16" width="188" height="300" rx="10"></rect>
+          <line x1="24" y1="166" x2="196" y2="166" class="map-net"></line>
+          <text x="110" y="155" class="map-label">Court 1</text>
+          ${availability ? `<text x="110" y="181" class="map-status">${courtClass(1).includes("open") ? "Open" : "Reserved"}</text>` : ""}
         </g>
-        ${roomTile(`Trainer gym${trainerOpenSlots !== null ? ` · ${trainerOpenSlots}/${state.settings.trainerCapacity} open` : ""}`, 16, 318, 188, 92)}
-        ${roomTile("Office", 16, 422, 188, 38)}
-        ${roomTile("Locker rooms", 16, 472, 188, 38)}
-        ${topRow.map((courtNumber, index) => courtTile(courtNumber, rightStart + index * (columnWidth + columnGap), 16, columnWidth, rowHeight)).join("")}
-        ${bottomRow.map((courtNumber, index) => courtTile(courtNumber, rightStart + index * (columnWidth + columnGap), 16 + rowHeight + 16, columnWidth, rowHeight)).join("")}
+        ${roomTile(`Weight Training & Stretching${trainerOpenSlots !== null ? ` · ${trainerOpenSlots} open` : ""}`, 16, 330, 188, 100)}
+        ${roomTile("Lobby · Coffee bar", 16, 442, 188, 56)}
+        ${roomTile("Office", 16, 510, 188, 38)}
+        ${roomTile("Meeting room", 16, 560, 188, 38)}
+        ${leftColumn.map((courtNumber, index) => courtTile(courtNumber, rightStart, 16 + index * (courtHeight + rowGap), courtWidth, courtHeight)).join("")}
+        ${rightColumn.map((courtNumber, index) => courtTile(courtNumber, rightStart + courtWidth + columnGap, 16 + index * (courtHeight + rowGap), courtWidth, courtHeight)).join("")}
       </svg>
-      <figcaption class="small-copy">Nine courts, trainer gym, office, and locker rooms. Layout is approximate.</figcaption>
+      <figcaption class="small-copy">Court 1, eight match courts in two columns, the Weight Training &amp; Stretching Room, lobby and coffee bar. Layout follows the facility plan.</figcaption>
     </figure>
   `;
 }

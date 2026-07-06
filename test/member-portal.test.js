@@ -21,9 +21,9 @@ test("private lesson bracket options match the database check constraint", () =>
   assert.match(appSource, /\["1-2", "3", "4", "5\+"\]/);
 });
 
-test("facility map places court 1 left and courts 2-9 clockwise from bottom-left", () => {
-  assert.match(appSource, /const topRow = \[3, 4, 5, 6\];/);
-  assert.match(appSource, /const bottomRow = \[2, 9, 8, 7\];/);
+test("facility map matches Exhibit C: two columns of four beside vertical court 1", () => {
+  assert.match(appSource, /const leftColumn = \[2, 3, 4, 5\];/);
+  assert.match(appSource, /const rightColumn = \[6, 7, 8, 9\];/);
 });
 
 test("public login screen uses a neutral email placeholder", () => {
@@ -91,4 +91,11 @@ test("combined Sideline x Summer League design is applied", async () => {
 
 test("brand graphics from the logo package are wired in", () => {
   assert.match(appSource, /const TRAINING_IMAGE = "\/window-panels\.svg"/);
+});
+
+test("card-on-file and cancellation tiers are wired in the UI", () => {
+  assert.match(appSource, /privateBookingBlocked/);
+  assert.match(appSource, /credit card on file is required for private lessons/i);
+  assert.match(appSource, /cancellationFeePercentFor/);
+  assert.match(appSource, /50% between 36 and 24 hours/);
 });

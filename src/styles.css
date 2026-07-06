@@ -2220,3 +2220,93 @@ h1, h2, .hero h1, .brand-name, .metric strong {
 .facility-map .map-court.busy .map-label, .facility-map .map-court.busy .map-status { fill: #5c1f14; }
 
 .address-line { font-weight: 600; color: var(--muted); }
+
+/* --- Design 7: crest hero, tiles, stat band, map panel ------------------- */
+.crest-hero {
+  display: grid;
+  grid-template-columns: 1.08fr 0.92fr;
+  gap: 48px;
+  align-items: center;
+  background: var(--surface);
+  min-height: 0;
+}
+.crest-hero .hero-copy h1 { font-size: clamp(40px, 5vw, 68px); letter-spacing: -1.5px; }
+.crest-hero .accent-red { font-style: normal; color: var(--coral); }
+.crest-hero .accent-blue { font-style: normal; color: var(--teal); }
+.crest-card {
+  background: var(--panel);
+  border: 3px solid var(--ink);
+  border-radius: 22px;
+  padding: 22px;
+  text-align: center;
+  box-shadow: 12px 12px 0 var(--gold);
+}
+.crest-card img { height: 92px; margin-bottom: 10px; }
+.crest-card svg { width: 100%; height: auto; border-radius: 10px; }
+.crest-cap {
+  margin-top: 12px;
+  font: 800 12px "Bricolage Grotesque", sans-serif;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+}
+.crest-cap.muted { font-size: 10.5px; color: var(--muted); }
+.crest-ring { display: flex; justify-content: center; gap: 10px; margin-top: 12px; }
+.crest-ring b {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: grid; place-items: center; color: #fff;
+  font: 800 15px "Bricolage Grotesque", sans-serif;
+}
+.ring-royal { background: var(--teal); }
+.ring-cherry { background: var(--coral); }
+.ring-gold { background: var(--gold); color: var(--ink); }
+.ring-navy { background: var(--ink); }
+
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.tile {
+  border-radius: 18px;
+  padding: 26px;
+  color: #fff;
+  border: 2.5px solid var(--ink);
+  box-shadow: 8px 8px 0 var(--ink);
+}
+.tile-royal { background: var(--teal); }
+.tile-cherry { background: var(--coral); }
+.tile-gold { background: var(--gold); color: var(--ink); }
+.tile i { font-size: 30px; }
+.tile h3 { font: 800 20px "Bricolage Grotesque", sans-serif; margin: 12px 0 8px; }
+.tile p { font-size: 14.5px; opacity: 0.94; margin: 0; }
+.access-note { text-align: center; margin: 18px 0 0; }
+
+.metric-row { border-block: 2.5px solid var(--ink); border-radius: 0; }
+.metric { display: flex; align-items: center; gap: 14px; border-left: 2.5px solid var(--ink); }
+.metric:first-child { border-left: 0; }
+.metric-icon {
+  font-size: 19px; width: 42px; height: 42px; border-radius: 13px;
+  display: inline-flex; align-items: center; justify-content: center; color: #fff; flex: none;
+}
+.metric:nth-child(1) .metric-icon { background: var(--teal); }
+.metric:nth-child(2) .metric-icon { background: var(--coral); }
+.metric:nth-child(3) .metric-icon { background: var(--gold); color: var(--ink); }
+.metric:nth-child(4) .metric-icon { background: var(--ink); }
+.metric-body { display: flex; flex-direction: column; }
+
+.map-section .facility-map {
+  background: var(--panel);
+  border: 2.5px solid var(--ink);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 10px 10px 0 var(--azure);
+}
+
+.billing-warning { color: var(--coral); font-weight: 600; }
+.billing-ok { color: var(--green); font-weight: 600; }
+.policy-line { color: var(--muted); }
+
+@media (max-width: 920px) {
+  .crest-hero { grid-template-columns: 1fr; }
+  .tile-grid { grid-template-columns: 1fr; }
+}
