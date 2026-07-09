@@ -117,3 +117,11 @@ test("weight room is instructor space & equipment rental with white court lines"
   const migration = await readFile(new URL("../supabase/migrations/20260711100000_weight_room_instructor_rental.sql", import.meta.url), "utf8");
   assert.match(migration, /instructors only/);
 });
+
+test("crest hero uses ink text on the light background (no invisible white text)", async () => {
+  const css = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
+  const heroWhite = css.indexOf("color: white");
+  const crestInk = css.lastIndexOf(".hero.crest-hero .hero-text { color: var(--muted); }");
+  assert.ok(heroWhite >= 0 && crestInk > heroWhite, "crest hero overrides must come after the photo-hero whites");
+  assert.match(css, /\.hero\.crest-hero \{[^}]*color: var\(--ink\)/s);
+});

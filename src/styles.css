@@ -2310,3 +2310,17 @@ h1, h2, .hero h1, .brand-name, .metric strong {
   .crest-hero { grid-template-columns: 1fr; }
   .tile-grid { grid-template-columns: 1fr; }
 }
+
+/* Crest hero is a light hero: restore ink text over the old photo-hero whites */
+.hero.crest-hero {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: none;
+  align-content: center;
+  min-height: 0;
+  padding: 56px 46px;
+}
+.hero.crest-hero .eyebrow { color: var(--teal); }
+.hero.crest-hero .hero-copy h1 { color: var(--ink); }
+.hero.crest-hero .hero-text { color: var(--muted); }
+.hero.crest-hero .secondary-action { border-color: var(--ink); color: var(--ink); }
