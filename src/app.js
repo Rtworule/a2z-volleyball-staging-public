@@ -469,6 +469,19 @@ document.addEventListener("click", (event) => {
     void cancelMyReservation(target.dataset.reservation);
   }
 
+  if (target.dataset.action === "finder-check") {
+    if (isApprovedMember()) {
+      setView("book");
+    } else if (state.user) {
+      state.notice = "Your account is awaiting front-desk approval — availability unlocks once it is approved.";
+      render();
+    } else {
+      state.notice = "Sign in (or request access) to see live availability — your date and time carry over.";
+      setView("login");
+    }
+    return;
+  }
+
   if (target.dataset.action === "edit-reservation") {
     beginEditReservation(target.dataset.reservation);
   }
@@ -1059,26 +1072,59 @@ function renderHero() {
   }
 
   return `
-    <section class="hero public-hero crest-hero">
-      <div class="hero-copy">
-        <p class="eyebrow">Nine courts · One roof · Chantilly, VA</p>
-        <h1>Where <em class="accent-red">every serve</em> finds a <em class="accent-blue">court.</em></h1>
-        <p class="hero-text">Reserve PVC sport-tile courts from one hour, in 30-minute steps. Run private lessons and camps &amp; clinics on court, instructors can rent the Weight Training &amp; Stretching Room — space and equipment — for their own private or group training, and clubs manage their whole season from one schedule. Invoices arrive after you play.</p>
-        <div class="hero-actions">
-          ${state.user ? "" : `<button type="button" class="primary-action" data-view="signup">Join the roster</button>`}
-          ${state.user ? "" : `<button type="button" class="secondary-action" data-view="login">Log in</button>`}
-          <button type="button" class="secondary-action" data-view="programs">View programs</button>
-        </div>
+    <section class="hero public-hero finder-hero">
+      <img class="hero-badge" src="/atoz-volleyball-logo.png" alt="A to Z Volleyball Center logo">
+      <h1>Find your court. <em class="accent-red">Book it in seconds.</em></h1>
+      <p class="hero-text">Nine PVC sport-tile courts in Chantilly, VA — live availability for approved members, 1-hour minimum in 30-minute steps, invoiced after play.</p>
+      <div class="finder" role="search" aria-label="Check court availability">
+        <label class="finder-fld">
+          <span>Date</span>
+          <input data-control="date" type="date" value="${state.date}">
+        </label>
+        <label class="finder-fld">
+          <span>Start time</span>
+          <select data-control="time">
+            ${timeOptions().map((slot) => `<option value="${slot}" ${state.time === slot ? "selected" : ""}>${formatTime(slot)}</option>`).join("")}
+          </select>
+        </label>
+        <label class="finder-fld">
+          <span>Duration</span>
+          <select data-control="durationMinutes">
+            ${[60, 90, 120, 150, 180].map((minutes) => `<option value="${minutes}" ${state.durationMinutes === minutes ? "selected" : ""}>${minutes / 60} hour${minutes > 60 ? "s" : ""}</option>`).join("")}
+          </select>
+        </label>
+        <button type="button" class="finder-go" data-action="finder-check"><i class="ph-bold ph-magnifying-glass"></i> Check availability</button>
       </div>
-      <aside class="crest-card" aria-label="A to Z Volleyball Center">
-        <img src="/atoz-volleyball-logo.png" alt="A to Z Volleyball Center logo">
-        <svg viewBox="0 0 400 240" role="img" aria-label="Court in facility colors"><rect width="400" height="240" rx="8" fill="#2aa9e0"/><rect x="28" y="22" width="344" height="196" fill="#de1f26" stroke="#ffffff" stroke-width="4"/><line x1="200" y1="22" x2="200" y2="218" stroke="#ffffff" stroke-width="4"/><line x1="140" y1="22" x2="140" y2="218" stroke="#ffffff" stroke-width="2" stroke-dasharray="8 6"/><line x1="260" y1="22" x2="260" y2="218" stroke="#ffffff" stroke-width="2" stroke-dasharray="8 6"/></svg>
-        <div class="crest-cap">CHERRY COURTS · SKYBLUE APRONS · GOLD LINES</div>
-        <div class="crest-ring">
-          <b class="ring-royal">9</b><b class="ring-cherry">1h</b><b class="ring-gold">30</b><b class="ring-navy">7</b>
-        </div>
-        <div class="crest-cap muted">COURTS · MIN BOOKING · MIN STEPS · DAYS OPEN</div>
-      </aside>
+      <div class="hero-actions">
+        ${state.user ? "" : `<button type="button" class="secondary-action" data-view="signup">Join the roster</button>`}
+        <button type="button" class="secondary-action" data-view="programs">View programs</button>
+      </div>
+    </section>
+  `;
+}
+
+function renderAvailabilityTeaser() {
+  const columns = ["6:00", "6:30", "7:00", "7:30", "8:00", "8:30"];
+  const rows = ["Court 1", "Court 2", "Court 3", "Weight room"];
+  if (isApprovedMember()) {
+    return `
+      <section class="workspace teaser-section">
+        <div class="workspace-head"><div><p class="eyebrow">Live availability</p><h2>Your grid is one tap away</h2></div></div>
+        <p class="small-copy">Open the live nine-court grid to tap any open half hour${state.memberContexts.some((context) => context.type === "private") ? " — the weight room row shows for your instructor account" : ""}.</p>
+        <button type="button" class="primary-action" data-view="book">Open the live grid</button>
+      </section>
+    `;
+  }
+  return `
+    <section class="workspace teaser-section">
+      <div class="workspace-head"><div><p class="eyebrow">Availability</p><h2>Live availability opens after sign-in</h2></div></div>
+      <div class="avail-teaser" aria-hidden="true">
+        <table class="avail-table">
+          <tr><th></th>${columns.map((label) => `<th>${label}</th>`).join("")}</tr>
+          ${rows.map((label) => `<tr><td>${label}</td>${columns.map(() => `<td><span class="slot locked"><i class="ph-bold ph-lock-simple"></i></span></td>`).join("")}</tr>`).join("")}
+        </table>
+      </div>
+      <p class="small-copy">Approved members see every open half hour across all nine courts and can tap any green slot to book. <button type="button" class="ghost-action" data-view="signup">Request access</button></p>
     </section>
   `;
 }
@@ -1089,19 +1135,12 @@ function renderHomeView() {
   }
 
   return `
-    <section class="tile-grid" aria-label="What you can do here">
-      <article class="tile tile-royal"><i class="ph-bold ph-calendar-check"></i><h3>Live schedule</h3><p>Approved members see every open slot across nine courts and the rentable Weight Training &amp; Stretching Room.</p></article>
-      <article class="tile tile-cherry"><i class="ph-bold ph-users-three"></i><h3>Club season blocks</h3><p>Two courts, every Monday and Wednesday at 6? Locked for the season, invoiced after play.</p></article>
-      <article class="tile tile-gold"><i class="ph-bold ph-chalkboard-teacher"></i><h3>Lessons, camps &amp; training</h3><p>Private lessons and camps &amp; clinics on court. Instructors rent the weight room — space &amp; equipment — for their own training sessions.</p></article>
+    ${renderAvailabilityTeaser()}
+    <section class="rule-band" aria-label="How booking works">
+      <div class="rb"><i class="ph-bold ph-credit-card"></i><span>Private lessons &amp; camps need a card on file — free cancel &gt;36h, 50% at 36–24h, 100% within 24h. Trusted coaches can be moved to monthly billing.</span></div>
+      <div class="rb"><i class="ph-bold ph-users-three"></i><span>Clubs lock season practice blocks across multiple courts; team practices are managed with the front desk and invoiced after play.</span></div>
+      <div class="rb"><i class="ph-bold ph-barbell"></i><span>Instructors rent the Weight Training &amp; Stretching Room — space &amp; equipment only — during the same hours as the courts.</span></div>
     </section>
-    <p class="small-copy access-note">Scheduling opens after account approval — the front desk reviews every new account before booking unlocks.</p>
-    <section class="metric-row" aria-label="Facility metrics">
-      ${metric(String(state.settings.courtCount), "PVC sport-tile courts", "volleyball")}
-      ${metric("1h", "minimum booking", "clock")}
-      ${metric(formatCurrency(state.settings.pricing.courtHourlyRate), "court hourly rate", "receipt")}
-      ${metric("30m", "increments after the first hour", "arrows-left-right")}
-    </section>
-    <div class="marquee" aria-hidden="true"><span>SEASON BLOCKS FOR CLUBS · PRIVATE LESSONS 1–2 / 3 / 4 / 5+ · CAMPS &amp; CLINICS · WEIGHT ROOM SPACE &amp; EQUIPMENT RENTAL FOR INSTRUCTORS · INVOICED AFTER PLAY · OPEN 7 DAYS ·&nbsp;</span></div>
     <section class="workspace map-section">
       <div class="workspace-head">
         <div>

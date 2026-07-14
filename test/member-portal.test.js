@@ -78,17 +78,20 @@ test("private lessons are editable through member_update_reservation with a 36h 
   assert.match(appSource, /data-action="edit-reservation"/);
 });
 
-test("combined Sideline x Summer League design is applied", async () => {
+test("Design 8 (Court Finder) is applied site-wide outside admin", async () => {
   const css = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
   assert.match(css, /--coral: #de1f26/);
-  assert.match(css, /--azure: #2aa9e0/);
-  assert.match(css, /--gold: #f5c400/);
-  assert.match(css, /marquee-roll/);
+  assert.match(css, /\.hero\.finder-hero/);
+  assert.match(css, /\.avail-table th \{ background: var\(--ink\)/);
+  assert.match(css, /\.grid-cell \{ border-radius: 999px/);
   assert.match(html, /Bricolage\+Grotesque/);
   assert.match(html, /phosphor-icons/);
-  assert.match(appSource, /class="marquee"/);
-  assert.match(appSource, /Chantilly, VA 20152/);
+  assert.match(appSource, /data-action="finder-check"/);
+  assert.match(appSource, /renderAvailabilityTeaser/);
+  assert.match(appSource, /class="rule-band"/);
+  assert.doesNotMatch(appSource, /class="marquee"/);
+  assert.doesNotMatch(appSource, /crest-card/);
 });
 
 test("brand graphics from the logo package are wired in", () => {
