@@ -15,10 +15,13 @@
     "build:staging": "vite build --mode staging",
     "build:production": "vite build --mode production",
     "preview": "vite preview --host 127.0.0.1 --port 4173",
-    "test": "node --test test/*.js features/*/test/*.js",
+    "smoke:staging": "node scripts/smoke-staging.mjs",
+    "test": "node --test test/*.js",
+    "test:archive": "node --test docs/archive/hermes-feature-slices/*/test/*.js",
     "supabase:start": "supabase start --network-id supabase-local-a2z",
-    "supabase:stop": "supabase stop",
-    "supabase:status": "supabase status",
+    "supabase:stop": "supabase stop --network-id supabase-local-a2z --project-id a2z-volleyball",
+    "supabase:restart": "npm run supabase:stop && npm run supabase:start",
+    "supabase:status": "supabase status --network-id supabase-local-a2z",
     "supabase:reset": "supabase db reset",
     "supabase:push": "supabase db push"
   },
@@ -29,6 +32,6 @@
     "vite": "^8.0.16"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.107.0"
+    "@supabase/supabase-js": "^2.108.2"
   }
 }

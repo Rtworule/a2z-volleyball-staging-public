@@ -1,9 +1,8 @@
 import { SchedulingService } from "./scheduler.js";
 import { supabase, supabaseConfig } from "./supabaseClient.js";
 
-const HERO_IMAGE = "/hero-court.svg";
-const BALL_IMAGE = "/ball-court.svg";
-const TRAINING_IMAGE = "/window-panels.svg";
+const HERO_IMAGE = "/volleyball-hero-junior-girls-v5.jpg";
+const TRAINING_IMAGE = "/volleyball-hero-v2.jpg";
 const FACILITY_TIMEZONE = "America/New_York";
 const DEFAULT_MESSAGE_DISPLAY_SECONDS = 5;
 const isLocalPreview = ["", "localhost", "127.0.0.1"].includes(window.location.hostname) || window.location.protocol === "file:";
@@ -467,19 +466,6 @@ document.addEventListener("click", (event) => {
 
   if (target.dataset.action === "cancel-reservation") {
     void cancelMyReservation(target.dataset.reservation);
-  }
-
-  if (target.dataset.action === "finder-check") {
-    if (isApprovedMember()) {
-      setView("book");
-    } else if (state.user) {
-      state.notice = "Your account is awaiting front-desk approval — availability unlocks once it is approved.";
-      render();
-    } else {
-      state.notice = "Sign in (or request access) to see live availability — your date and time carry over.";
-      setView("login");
-    }
-    return;
   }
 
   if (target.dataset.action === "edit-reservation") {
@@ -1071,60 +1057,24 @@ function renderHero() {
     `;
   }
 
-  return `
-    <section class="hero public-hero finder-hero">
-      <img class="hero-badge" src="/atoz-volleyball-logo.png" alt="A to Z Volleyball Center logo">
-      <h1>Find your court. <em class="accent-red">Book it in seconds.</em></h1>
-      <p class="hero-text">Nine PVC sport-tile courts in Chantilly, VA — live availability for approved members, 1-hour minimum in 30-minute steps, invoiced after play.</p>
-      <div class="finder" role="search" aria-label="Check court availability">
-        <label class="finder-fld">
-          <span>Date</span>
-          <input data-control="date" type="date" value="${state.date}">
-        </label>
-        <label class="finder-fld">
-          <span>Start time</span>
-          <select data-control="time">
-            ${timeOptions().map((slot) => `<option value="${slot}" ${state.time === slot ? "selected" : ""}>${formatTime(slot)}</option>`).join("")}
-          </select>
-        </label>
-        <label class="finder-fld">
-          <span>Duration</span>
-          <select data-control="durationMinutes">
-            ${[60, 90, 120, 150, 180].map((minutes) => `<option value="${minutes}" ${state.durationMinutes === minutes ? "selected" : ""}>${minutes / 60} hour${minutes > 60 ? "s" : ""}</option>`).join("")}
-          </select>
-        </label>
-        <button type="button" class="finder-go" data-action="finder-check"><i class="ph-bold ph-magnifying-glass"></i> Check availability</button>
-      </div>
-      <div class="hero-actions">
-        ${state.user ? "" : `<button type="button" class="secondary-action" data-view="signup">Join the roster</button>`}
-        <button type="button" class="secondary-action" data-view="programs">View programs</button>
-      </div>
-    </section>
-  `;
-}
-
-function renderAvailabilityTeaser() {
-  const columns = ["6:00", "6:30", "7:00", "7:30", "8:00", "8:30"];
-  const rows = ["Court 1", "Court 2", "Court 3", "Weight room"];
-  if (isApprovedMember()) {
-    return `
-      <section class="workspace teaser-section">
-        <div class="workspace-head"><div><p class="eyebrow">Live availability</p><h2>Your grid is one tap away</h2></div></div>
-        <p class="small-copy">Open the live nine-court grid to tap any open half hour${state.memberContexts.some((context) => context.type === "private") ? " — the weight room row shows for your instructor account" : ""}.</p>
-        <button type="button" class="primary-action" data-view="book">Open the live grid</button>
-      </section>
-    `;
+  if (state.view !== "home") {
+    return "";
   }
+
   return `
-    <section class="workspace teaser-section">
-      <div class="workspace-head"><div><p class="eyebrow">Availability</p><h2>Live availability opens after sign-in</h2></div></div>
-      <div class="avail-teaser" aria-hidden="true">
-        <table class="avail-table">
-          <tr><th></th>${columns.map((label) => `<th>${label}</th>`).join("")}</tr>
-          ${rows.map((label) => `<tr><td>${label}</td>${columns.map(() => `<td><span class="slot locked"><i class="ph-bold ph-lock-simple"></i></span></td>`).join("")}</tr>`).join("")}
-        </table>
+    <section class="hero public-hero hypothesis-four-hero" style="--hero-image: url('${HERO_IMAGE}')">
+      <div class="hypothesis-four-inner">
+        <div class="hero-copy">
+          <p class="eyebrow">Opening soon in Chantilly, Virginia</p>
+          <h1>A to Z Volleyball Center</h1>
+          <p class="hero-text">Court rentals, private lessons, camps, clinics, and season-long team blocks, all in one dedicated volleyball facility.</p>
+        </div>
+        <div class="hero-actions">
+          <button type="button" class="primary-action" data-view="signup"><i class="ph-bold ph-user-plus"></i> Request access</button>
+          <button type="button" class="secondary-action hero-secondary" data-view="programs">Explore programs <i class="ph-bold ph-arrow-right"></i></button>
+        </div>
+        <p class="hero-note"><i class="ph-bold ph-shield-check"></i> New accounts are reviewed by the front desk before scheduling unlocks.</p>
       </div>
-      <p class="small-copy">Approved members see every open half hour across all nine courts and can tap any green slot to book. <button type="button" class="ghost-action" data-view="signup">Request access</button></p>
     </section>
   `;
 }
@@ -1135,37 +1085,58 @@ function renderHomeView() {
   }
 
   return `
-    ${renderAvailabilityTeaser()}
-    <section class="rule-band" aria-label="How booking works">
-      <div class="rb"><i class="ph-bold ph-credit-card"></i><span>Private lessons &amp; camps need a card on file — free cancel &gt;36h, 50% at 36–24h, 100% within 24h. Trusted coaches can be moved to monthly billing.</span></div>
-      <div class="rb"><i class="ph-bold ph-users-three"></i><span>Clubs lock season practice blocks across multiple courts; team practices are managed with the front desk and invoiced after play.</span></div>
-      <div class="rb"><i class="ph-bold ph-barbell"></i><span>Instructors rent the Weight Training &amp; Stretching Room — space &amp; equipment only — during the same hours as the courts.</span></div>
+    <section class="fact-band" aria-label="Facility facts">
+      <div class="fact-grid">
+        <div class="fact"><i class="ph-bold ph-volleyball"></i><div><strong>${state.settings.courtCount} courts</strong><span>PVC sport tile</span></div></div>
+        <div class="fact"><i class="ph-bold ph-clock"></i><div><strong>1 hour</strong><span>Minimum booking</span></div></div>
+        <div class="fact"><i class="ph-bold ph-timer"></i><div><strong>30 minutes</strong><span>Scheduling increments</span></div></div>
+        <div class="fact"><i class="ph-bold ph-calendar-dots"></i><div><strong>7 days</strong><span>Open every week</span></div></div>
+      </div>
     </section>
-    <section class="workspace map-section">
-      <div class="workspace-head">
-        <div>
+
+    <section class="home-section home-programs">
+      <div class="home-section-heading">
+        <p class="eyebrow">Built for volleyball</p>
+        <h2>One facility, every way to play.</h2>
+        <p>Reserve the space and program that fits your team, your athletes, or your training plan.</p>
+      </div>
+      <div class="home-program-grid">
+        <article class="home-program-card"><i class="ph-bold ph-volleyball"></i><h3>Court rentals</h3><p>Flexible court time for approved members, coaches, and teams.</p><button type="button" class="home-card-link" data-view="${isApprovedMember() ? "book" : "login"}">Reserve a court <i class="ph-bold ph-arrow-right"></i></button></article>
+        <article class="home-program-card"><i class="ph-bold ph-person-simple-throw"></i><h3>Private lessons</h3><p>Coach-led sessions sized for one athlete or a focused small group.</p><button type="button" class="home-card-link" data-view="${isApprovedMember() ? "book" : "login"}">Book a lesson <i class="ph-bold ph-arrow-right"></i></button></article>
+        <article class="home-program-card"><i class="ph-bold ph-users-three"></i><h3>Team blocks</h3><p>Recurring court schedules for clubs and season-long practices.</p><button type="button" class="home-card-link" data-view="programs">See team options <i class="ph-bold ph-arrow-right"></i></button></article>
+        <article class="home-program-card"><i class="ph-bold ph-barbell"></i><h3>Training room</h3><p>Weight and stretching space rented by instructors for private or group training.</p><button type="button" class="home-card-link" data-view="programs">Explore training <i class="ph-bold ph-arrow-right"></i></button></article>
+      </div>
+    </section>
+
+    <section class="home-section booking-path">
+      <div class="booking-path-inner">
+        <div class="booking-path-copy">
+          <p class="eyebrow">A clear booking path</p>
+          <h2>Get from account to court without the back-and-forth.</h2>
+          <p>Create an account once. After front-desk approval, live availability and member booking tools unlock.</p>
+        </div>
+        <div class="booking-steps">
+          <div class="booking-step"><span>01</span><div><strong>Create your account</strong><small>Use Google or email and password.</small></div><i class="ph-bold ph-user-plus"></i></div>
+          <div class="booking-step"><span>02</span><div><strong>Get approved</strong><small>The front desk verifies booking access.</small></div><i class="ph-bold ph-shield-check"></i></div>
+          <div class="booking-step"><span>03</span><div><strong>Choose and reserve</strong><small>See live court times in 30-minute steps.</small></div><i class="ph-bold ph-calendar-check"></i></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-section facility-home-section">
+      <div class="facility-home-grid">
+        <div class="facility-map-panel">
+          ${renderFacilityMap({ interactive: isApprovedMember() })}
+        </div>
+        <div class="facility-home-copy">
           <p class="eyebrow">Facility map</p>
-          <h2>Nine courts plus a rentable training room</h2>
+          <h2>Nine courts, one volleyball home.</h2>
+          <p>Eight match courts sit beside a vertical feature court, with the training room, lobby, coffee bar, office, and meeting space close by.</p>
+          <div class="location-item"><i class="ph-bold ph-map-pin"></i><div><strong>Chantilly, Virginia</strong><span>44080 Little River Turnpike, Suite 100<br>Chantilly, VA 20152</span></div></div>
+          <div class="location-item"><i class="ph-bold ph-calendar-dots"></i><div><strong>Open seven days</strong><span>Exact hours and live availability appear in your approved member account.</span></div></div>
+          <button type="button" class="primary-action" data-view="signup">Request booking access</button>
         </div>
       </div>
-      ${renderFacilityMap({ interactive: isApprovedMember() })}
-    </section>
-    <section class="workspace hours-section">
-      <div class="workspace-head">
-        <div>
-          <p class="eyebrow">Hours</p>
-          <h2>Open seven days a week</h2>
-        </div>
-      </div>
-      <div class="hours-grid">
-        ${Object.entries(state.settings.operatingHours).map(([dayIndex, hours]) => `
-          <div class="hours-cell${hours.closed ? " closed" : ""}">
-            <strong>${dayName(Number(dayIndex))}</strong>
-            <span>${hours.closed ? "Closed" : `${formatTime(hours.open)} – ${formatTime(hours.close)}`}</span>
-          </div>
-        `).join("")}
-      </div>
-      <p class="small-copy">Courts and the Weight Training &amp; Stretching Room rent during the same hours. Court schedules and reservations are available to approved member accounts after sign-in. Invoices are sent after play — no online payment is required.</p><p class="small-copy address-line">44080 Little River Turnpike, Suite 100, Chantilly, VA 20152</p>
     </section>
   `;
 }
@@ -1206,12 +1177,10 @@ function renderLoginView() {
           </label>
           <button type="submit" class="primary-action full">Log in</button>
         </form>
-        <div class="social-grid" aria-label="Social login options">
+        <div class="social-grid" aria-label="Google login option">
           ${socialButton("Google")}
-          ${socialButton("Apple")}
-          ${socialButton("Facebook")}
         </div>
-        ${isLocalPreview ? `<p class="small-copy">Local test logins: member / A2zMember1, pending / A2zPending1, owner / A2zOwner1.</p>` : `<p class="small-copy">Sign in with your email and password, or use Google or Facebook below.</p>`}
+        ${isLocalPreview ? `<p class="small-copy">Local test logins: member / A2zMember1, pending / A2zPending1, owner / A2zOwner1.</p>` : `<p class="small-copy">Sign in with Google or use your email and password.</p>`}
         ${shouldUseLiveAuth() ? `
           <button type="button" class="ghost-action" data-action="forgot-password">Forgot password?</button>` : ""}
         <button type="button" class="secondary-action" data-view="signup">Create account</button>
@@ -1262,6 +1231,11 @@ function renderSignupView() {
           </label>
           <button type="submit" class="primary-action full">Request access</button>
         </form>
+        <div class="auth-divider"><span>or</span></div>
+        <div class="social-grid" aria-label="Google account creation option">
+          ${socialButton("Google", "Continue with Google")}
+        </div>
+        <p class="small-copy">Google accounts still require front-desk approval before booking access is available.</p>
         <button type="button" class="secondary-action" data-view="login">Back to log in</button>
       </article>
       <aside class="panel image-panel">
@@ -1286,11 +1260,11 @@ function renderProgramsView() {
         </div>
       </div>
       <div class="program-grid">
-        ${program("Court rentals", "Court reservations for approved members, teams, and coaches.", `From ${formatCurrency(state.settings.pricing.courtHourlyRate)}/hr`, isApprovedMember() ? "Book court" : "Log in")}
-        ${program("Private lessons", "Coach-led on-court sessions for 1-2, 3, 4, or 5+ players.", `From ${formatCurrency(state.settings.pricing.courtHourlyRate)}/hr`, isApprovedMember() ? "Book a lesson" : "Log in")}
-        ${program("Weight room rental", "Space & equipment rental in the Weight Training & Stretching Room — rented by instructors for their own private or group training.", `From ${formatCurrency(state.settings.pricing.gymHourlyRate)}/hr`, isApprovedMember() ? "Rent the room" : "Log in")}
+        ${program("Court rentals", "Court reservations for approved members, teams, and coaches.", `From ${formatCurrency(state.settings.pricing.courtHourlyRate)}/hr`, "Book court")}
+        ${program("Private lessons", "Coach-led on-court sessions for 1-2, 3, 4, or 5+ players.", `From ${formatCurrency(state.settings.pricing.courtHourlyRate)}/hr`, "Book a lesson")}
+        ${program("Weight room rental", "Space & equipment rental in the Weight Training & Stretching Room — rented by instructors for their own private or group training.", `From ${formatCurrency(state.settings.pricing.gymHourlyRate)}/hr`, "Rent the room")}
         ${program("Team blocks", "Season-long fixed schedules for clubs and recurring practices.", "Managed schedules", "Contact us")}
-        ${program("Camps & Clinics", "Multi-player skills camps and clinics at their own hourly rate.", "Camp rate", isApprovedMember() ? "Book a camp" : "Log in")}
+        ${program("Camps & Clinics", "Multi-player skills camps and clinics at their own hourly rate.", "Camp rate", "Book a camp")}
       </div>
     </section>
   `;
@@ -3068,18 +3042,24 @@ function metric(value, label, icon) {
 }
 
 function program(title, copy, meta, action) {
+  const pendingApproval = isPendingMember();
+  const label = isApprovedMember() ? action : pendingApproval ? "Waiting for approval" : "Log in";
+  const buttonAttributes = pendingApproval
+    ? `disabled aria-disabled="true"`
+    : `data-view="${isApprovedMember() ? "book" : "login"}"`;
+
   return `
     <article class="program-card">
       <span>${meta}</span>
       <h3>${title}</h3>
       <p>${copy}</p>
-      <button type="button" data-view="${isApprovedMember() ? "book" : "login"}">${action}</button>
+      <button type="button" ${buttonAttributes}>${label}</button>
     </article>
   `;
 }
 
-function socialButton(provider) {
-  return `<button type="button" class="secondary-action" data-social-provider="${provider}">${provider}</button>`;
+function socialButton(provider, label = `Continue with ${provider}`) {
+  return `<button type="button" class="secondary-action social-provider-action" data-social-provider="${provider}"><i class="ph-bold ph-google-logo"></i>${label}</button>`;
 }
 
 function renderMobileNav() {
@@ -7569,7 +7549,7 @@ function renderFacilityMap({ interactive = false } = {}) {
 
 
 async function signInWithProvider(provider) {
-  if (!shouldUseLiveAuth() || !supabase || !["google", "facebook", "apple"].includes(provider)) {
+  if (!shouldUseLiveAuth() || !supabase || provider !== "google") {
     return;
   }
   const { error } = await supabase.auth.signInWithOAuth({
@@ -7752,6 +7732,11 @@ function canViewScheduling() {
 
 function isApprovedMember() {
   return Boolean(state.user?.authenticated && state.user.approved && state.user.role === "user");
+}
+
+function isPendingMember() {
+  const approvalStatus = String(state.user?.approvalStatus ?? (state.user?.approved ? "approved" : "pending")).toLowerCase();
+  return Boolean(state.user?.authenticated && state.user.role === "user" && approvalStatus === "pending");
 }
 
 function isAdminSession() {

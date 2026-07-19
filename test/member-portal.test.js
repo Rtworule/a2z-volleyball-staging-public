@@ -58,17 +58,28 @@ test("signup has no parent mentions and redirects email confirmation to the site
   assert.match(appSource, /emailRedirectTo: window\.location\.origin/);
 });
 
-test("social login uses Supabase OAuth with a site redirect", () => {
+test("Google login uses Supabase OAuth with a site redirect", () => {
   assert.match(appSource, /supabase\.auth\.signInWithOAuth\(\{\s*provider,\s*options: \{ redirectTo: window\.location\.origin \}/);
   assert.match(appSource, /signInWithProvider\(target\.dataset\.socialProvider\.toLowerCase\(\)\)/);
+  assert.match(appSource, /provider !== "google"/);
+  assert.match(appSource, /Google account creation option/);
+  assert.doesNotMatch(appSource, /socialButton\("Facebook"\)/);
+  assert.doesNotMatch(appSource, /socialButton\("Apple"\)/);
   assert.doesNotMatch(appSource, /Social login is disabled/);
   assert.doesNotMatch(appSource, /data-action="social-login"/);
 });
 
+test("program CTAs distinguish signed-out, pending, and approved members", async () => {
+  const css = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
+  assert.match(appSource, /const label = isApprovedMember\(\) \? action : pendingApproval \? "Waiting for approval" : "Log in"/);
+  assert.match(appSource, /disabled aria-disabled="true"/);
+  assert.match(appSource, /function isPendingMember\(\)/);
+  assert.match(css, /\.program-card button:disabled/);
+});
+
 test("site imagery is local volleyball artwork", () => {
-  assert.match(appSource, /const HERO_IMAGE = "\/hero-court\.svg"/);
-  assert.match(appSource, /const BALL_IMAGE = "\/ball-court\.svg"/);
-  assert.match(appSource, /const TRAINING_IMAGE = "\/window-panels\.svg"/);
+  assert.match(appSource, /const HERO_IMAGE = "\/volleyball-hero-junior-girls-v5\.jpg"/);
+  assert.match(appSource, /const TRAINING_IMAGE = "\/volleyball-hero-v2\.jpg"/);
   assert.doesNotMatch(appSource, /pexels\.com/);
 });
 
@@ -78,24 +89,19 @@ test("private lessons are editable through member_update_reservation with a 36h 
   assert.match(appSource, /data-action="edit-reservation"/);
 });
 
-test("Design 8 (Court Finder) is applied site-wide outside admin", async () => {
+test("Hypothesis 4 homepage is applied with the reference headline font", async () => {
   const css = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
-  assert.match(css, /--coral: #de1f26/);
-  assert.match(css, /\.hero\.finder-hero/);
-  assert.match(css, /\.avail-table th \{ background: var\(--ink\)/);
-  assert.match(css, /\.grid-cell \{ border-radius: 999px/);
+  assert.match(css, /Hypothesis 4: Lift the Scrim/);
+  assert.match(css, /\.hypothesis-four-hero/);
+  assert.match(css, /\.fact-band/);
+  assert.match(css, /\.booking-path/);
   assert.match(html, /Bricolage\+Grotesque/);
   assert.match(html, /phosphor-icons/);
-  assert.match(appSource, /data-action="finder-check"/);
-  assert.match(appSource, /renderAvailabilityTeaser/);
-  assert.match(appSource, /class="rule-band"/);
-  assert.doesNotMatch(appSource, /class="marquee"/);
-  assert.doesNotMatch(appSource, /crest-card/);
-});
-
-test("brand graphics from the logo package are wired in", () => {
-  assert.match(appSource, /const TRAINING_IMAGE = "\/window-panels\.svg"/);
+  assert.match(appSource, /class="hero public-hero hypothesis-four-hero"/);
+  assert.match(appSource, /<h1>A to Z Volleyball Center<\/h1>/);
+  assert.doesNotMatch(css, /Design 8/);
+  assert.doesNotMatch(appSource, /class="finder"/);
 });
 
 test("card-on-file and cancellation tiers are wired in the UI", () => {
@@ -116,15 +122,13 @@ test("weight room is instructor space & equipment rental with white court lines"
   assert.match(appSource, /space & equipment rental/i);
   assert.match(appSource, /type === "private" \? `<option value="trainer"/);
   const css = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
-  assert.match(css, /\.map-net \{ stroke: #ffffff/);
+  assert.match(css, /\.map-net \{\s*stroke: #ffffff/);
   const migration = await readFile(new URL("../supabase/migrations/20260711100000_weight_room_instructor_rental.sql", import.meta.url), "utf8");
   assert.match(migration, /instructors only/);
 });
 
-test("crest hero uses ink text on the light background (no invisible white text)", async () => {
-  const css = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
-  const heroWhite = css.indexOf("color: white");
-  const crestInk = css.lastIndexOf(".hero.crest-hero .hero-text { color: var(--muted); }");
-  assert.ok(heroWhite >= 0 && crestInk > heroWhite, "crest hero overrides must come after the photo-hero whites");
-  assert.match(css, /\.hero\.crest-hero \{[^}]*color: var\(--ink\)/s);
+test("staging hosts render the application while production stays coming soon", async () => {
+  const mainSource = await readFile(new URL("../src/main.js", import.meta.url), "utf8");
+  assert.match(mainSource, /PRODUCTION_HOSTS\.has\(currentHost\)/);
+  assert.doesNotMatch(mainSource, /!isLocalHost\s*\|\|/);
 });

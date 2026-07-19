@@ -3,7 +3,11 @@ const PRODUCTION_HOSTS = new Set([
   "www.atozvolleyball.com"
 ]);
 
-const shouldShowComingSoon = PRODUCTION_HOSTS.has(window.location.hostname.toLowerCase());
+const currentHost = window.location.hostname.toLowerCase();
+const isLocalHost = ["localhost", "127.0.0.1", "::1"].includes(currentHost);
+const shouldShowComingSoon =
+  PRODUCTION_HOSTS.has(currentHost) ||
+  (isLocalHost && new URLSearchParams(window.location.search).has("coming-soon"));
 
 if (shouldShowComingSoon) {
   await import("./coming-soon.css");

@@ -15,10 +15,6 @@ Commercial scheduling application for atozvolleyball.com.
 - Reservations must be at least 1 hour.
 - Reservation starts and ends must land on 30-minute intervals.
 - Operating hours and hourly rates are configurable through admin-only settings.
-- Approved members book through validated RPCs (member_get_portal, member_create_reservation, member_cancel_reservation) with anonymized availability.
-- Coach private lessons carry a player bracket (1-2, 3, 4, 5+) priced by lesson_bracket_prices (admin-managed, falls back to facility rates).
-- Booking and cancellation emails queue in notification_outbox; a Supabase Edge Function or cron should poll system_notification_outbox_job() with the service role, send each email, and call admin_mark_notification(id, success).
-- Password resets use Supabase Auth recovery links; the app shows a reset screen when a recovery link is opened.
 - Supabase migrations and seed data define profiles, resources, reservations, operating hours, facility config, closures, fixed reservations, temporary admin subjects, bulk transactions, and auth provider options.
 
 ## Verify
@@ -29,6 +25,10 @@ npm test
 npm audit --audit-level=moderate
 ```
 
+`npm test` covers the production app only. Older Hermes feature slices are kept under
+`docs/archive/hermes-feature-slices/` for reference and can be checked separately with
+`npm run test:archive`.
+
 ## Local Development
 
 ```bash
@@ -38,6 +38,10 @@ npm run dev:local
 ```
 
 Use `npm run dev:demo` for the browser-only demo login. Use `npm run dev:staging` or `npm run dev:production` only when the matching ignored environment file exists.
+
+Use `npm run supabase:restart` if Docker Desktop shows Supabase containers split across
+networks or stuck restarting. The Supabase scripts pin the local network to
+`supabase-local-a2z` so the DB hostname resolves consistently.
 
 ## Deployment
 

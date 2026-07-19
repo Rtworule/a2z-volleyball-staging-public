@@ -1,97 +1,146 @@
 :root {
-  color-scheme: light;
-  --ink: #17212b;
-  --muted: #5f6b75;
-  --paper: #fffaf1;
-  --line: rgb(255 255 255 / 0.34);
-  --court: #167467;
-  --sun: #f2b43f;
-  --action: #d8583b;
-  --action-dark: #b94730;
-  --shadow: 0 24px 70px rgb(23 33 43 / 0.2);
+  color-scheme: dark;
+  --white: #ffffff;
+  --soft-white: rgb(255 255 255 / 0.76);
+  --blue: #2356b6;
+  --red: #e8242d;
+  --yellow: #f6c928;
+  --focus: #ffe26b;
 }
 
 * {
   box-sizing: border-box;
 }
 
-html {
+html,
+body,
+#app {
   min-height: 100%;
-  background: var(--paper);
+}
+
+html {
+  background: #090d13;
 }
 
 body {
   min-height: 100vh;
   margin: 0;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: white;
-  background: var(--paper);
+  color: var(--white);
+  background: #090d13;
 }
 
 a {
   color: inherit;
 }
 
-.coming-soon-shell {
+.coming-soon-shell,
+.coming-soon-hero {
   min-height: 100vh;
+  min-height: 100svh;
+}
+
+.coming-soon-shell {
   display: grid;
-  padding: clamp(16px, 3vw, 34px);
 }
 
 .coming-soon-hero {
   position: relative;
-  min-height: calc(100vh - clamp(32px, 6vw, 68px));
+  isolation: isolate;
   display: grid;
   grid-template-rows: auto 1fr auto;
-  gap: 36px;
   overflow: hidden;
-  padding: clamp(22px, 5vw, 64px);
-  border-radius: 8px;
-  background:
-    linear-gradient(92deg, rgb(10 18 24 / 0.88), rgb(10 18 24 / 0.52) 58%, rgb(10 18 24 / 0.25)),
-    url("https://images.pexels.com/photos/17557539/pexels-photo-17557539.jpeg?auto=compress&cs=tinysrgb&w=1800") center / cover;
-  box-shadow: var(--shadow);
+  padding: 42px 56px 38px;
+  background-color: #101820;
+  background-image:
+    linear-gradient(90deg, rgb(6 9 14 / 0.94) 0%, rgb(6 9 14 / 0.82) 30%, rgb(6 9 14 / 0.18) 66%, rgb(6 9 14 / 0.08) 100%),
+    linear-gradient(0deg, rgb(6 9 14 / 0.72) 0%, transparent 35%),
+    url("/volleyball-hero-junior-girls-v5.jpg");
+  background-position: center;
+  background-size: cover;
 }
 
 .coming-soon-hero::after {
   content: "";
   position: absolute;
+  z-index: -1;
   inset: auto 0 0;
-  height: 42%;
-  background: linear-gradient(0deg, rgb(10 18 24 / 0.38), transparent);
-  pointer-events: none;
+  height: 5px;
+  background: linear-gradient(90deg, var(--red) 0 34%, var(--yellow) 34% 67%, var(--blue) 67% 100%);
 }
 
-.brand-lockup,
+.site-header,
 .hero-copy,
-.contact-link {
+.hero-footer {
   position: relative;
   z-index: 1;
+}
+
+.site-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 28px;
 }
 
 .brand-lockup {
   display: inline-flex;
   align-items: center;
   width: fit-content;
-  gap: 12px;
-  font-weight: 850;
-  letter-spacing: 0;
+  gap: 15px;
+  color: var(--white);
+  font-weight: 780;
+  text-decoration: none;
 }
 
 .brand-logo {
-  width: clamp(88px, 12vw, 132px);
-  height: auto;
+  width: 82px;
+  height: 72px;
   display: block;
   object-fit: contain;
+  border: 1px solid rgb(255 255 255 / 0.72);
   border-radius: 8px;
-  background: white;
-  padding: 4px;
-  box-shadow: 0 14px 32px rgb(0 0 0 / 0.18);
+  background: var(--white);
+  padding: 5px;
+  box-shadow: 0 12px 34px rgb(0 0 0 / 0.28);
+}
+
+.brand-name {
+  width: 180px;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.launch-status {
+  width: fit-content;
+  display: grid;
+  gap: 2px;
+  margin: 0 0 26px;
+  padding: 12px 16px 13px;
+  border-left: 5px solid var(--red);
+  border-radius: 6px;
+  color: #101820;
+  background: var(--yellow);
+  box-shadow: 0 12px 34px rgb(0 0 0 / 0.28);
+  line-height: 1;
+  transform: translateY(-16px);
+}
+
+.launch-status span {
+  font-size: 0.72rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.launch-status strong {
+  font-size: 1.3rem;
+  font-weight: 900;
 }
 
 .hero-copy {
+  width: min(720px, 60vw);
   align-self: center;
-  max-width: 760px;
+  padding-block: 54px 42px;
 }
 
 .eyebrow,
@@ -100,73 +149,230 @@ a {
 }
 
 .eyebrow {
-  color: var(--sun);
-  font-size: 0.8rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--yellow);
+  font-size: 0.78rem;
+  font-weight: 820;
   text-transform: uppercase;
 }
 
+.eyebrow::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red);
+}
+
 h1 {
-  max-width: 850px;
-  margin: 12px 0 18px;
-  font-size: clamp(3.7rem, 10vw, 8.6rem);
-  line-height: 0.9;
-  letter-spacing: 0;
+  max-width: 720px;
+  margin: 18px 0 24px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 6.5rem;
+  font-weight: 500;
+  line-height: 0.92;
+  text-wrap: balance;
 }
 
 .summary {
-  max-width: 640px;
-  color: rgb(255 255 255 / 0.9);
-  font-size: clamp(1.05rem, 2vw, 1.35rem);
-  line-height: 1.55;
+  max-width: 590px;
+  color: var(--soft-white);
+  font-size: 1.16rem;
+  line-height: 1.65;
 }
 
 .contact-link {
   width: fit-content;
+  min-height: 56px;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-height: 48px;
-  padding: 0 18px;
-  border: 1px solid var(--line);
+  gap: 20px;
+  margin-top: 34px;
+  padding: 0 20px;
+  border: 1px solid rgb(255 255 255 / 0.26);
   border-radius: 8px;
-  background: var(--action);
-  color: white;
-  font-size: 0.98rem;
-  font-weight: 850;
+  background: var(--white);
+  color: #111820;
+  font-size: 0.92rem;
+  font-weight: 760;
   text-decoration: none;
-  box-shadow: 0 16px 36px rgb(0 0 0 / 0.18);
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
 }
 
-.contact-link:hover,
-.contact-link:focus-visible {
-  background: var(--action-dark);
+.contact-label {
+  color: var(--red);
+  font-weight: 820;
 }
 
-.contact-link:focus-visible {
-  outline: 3px solid rgb(242 180 63 / 0.7);
-  outline-offset: 4px;
+.contact-email {
+  color: #303944;
 }
 
-@media (max-width: 680px) {
-  .coming-soon-shell {
-    padding: 0;
+.contact-link:hover {
+  background: var(--yellow);
+  transform: translateY(-2px);
+}
+
+.contact-link:focus-visible,
+.brand-lockup:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 5px;
+}
+
+.hero-footer {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  color: rgb(255 255 255 / 0.6);
+  font-size: 0.72rem;
+  font-weight: 760;
+  text-transform: uppercase;
+}
+
+.hero-footer span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.hero-footer span + span::before {
+  content: "";
+  width: 3px;
+  height: 3px;
+  margin: 0 12px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.42);
+}
+
+@media (max-width: 1120px) {
+  .coming-soon-hero {
+    padding-inline: 40px;
   }
 
+  .hero-copy {
+    width: min(630px, 66vw);
+  }
+
+  h1 {
+    font-size: 4.8rem;
+  }
+}
+
+@media (max-width: 720px) {
   .coming-soon-hero {
-    min-height: 100vh;
-    border-radius: 0;
+    min-height: 100svh;
+    padding: 24px 22px 28px;
+    background-image:
+      linear-gradient(90deg, rgb(6 9 14 / 0.9) 0%, rgb(6 9 14 / 0.48) 100%),
+      linear-gradient(0deg, rgb(6 9 14 / 0.96) 0%, rgb(6 9 14 / 0.2) 70%),
+      url("/volleyball-hero-junior-girls-v5.jpg");
+    background-position: 81% center;
+  }
+
+  .site-header {
+    gap: 16px;
   }
 
   .brand-lockup {
-    align-items: flex-start;
-    max-width: 260px;
+    gap: 10px;
+  }
+
+  .brand-logo {
+    width: 66px;
+    height: 58px;
+    padding: 4px;
+  }
+
+  .brand-name {
+    width: 122px;
+    font-size: 0.82rem;
+  }
+
+  .launch-status {
+    margin-bottom: 20px;
+    padding: 10px 13px 11px;
+    transform: translateY(-12px);
+    white-space: nowrap;
+  }
+
+  .launch-status span {
+    font-size: 0.66rem;
+  }
+
+  .launch-status strong {
+    font-size: 1.08rem;
+  }
+
+  .hero-copy {
+    width: 100%;
+    align-self: end;
+    padding-block: 64px 28px;
+  }
+
+  h1 {
+    max-width: 540px;
+    margin-block: 14px 18px;
+    font-size: 3.65rem;
+    line-height: 0.95;
+  }
+
+  .summary {
+    max-width: 500px;
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+
+  .contact-link {
+    min-height: 54px;
+    margin-top: 26px;
+  }
+}
+
+@media (max-width: 440px) {
+  .coming-soon-hero {
+    background-position: 82% center;
+  }
+
+  h1 {
+    font-size: 3.1rem;
   }
 
   .contact-link {
     width: 100%;
-    padding: 0 14px;
-    font-size: 0.9rem;
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding-block: 10px;
+  }
+
+  .contact-email {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .hero-footer {
+    font-size: 0.64rem;
+  }
+
+  .hero-footer span + span::before {
+    margin-inline: 7px;
+  }
+}
+
+@media (max-width: 360px) {
+  .brand-name {
+    display: none;
+  }
+
+  h1 {
+    font-size: 2.7rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-link {
+    transition: none;
   }
 }

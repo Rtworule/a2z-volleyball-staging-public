@@ -1,61 +1,82 @@
-# Social login setup (Supabase OAuth)
+# Google login setup (Supabase OAuth)
 
-The app already shows Google and Facebook buttons; each provider works as soon
-as it is enabled in Supabase. For every provider below you will need your
-project's callback URL, shown in **Supabase dashboard -> Authentication ->
-Providers -> (provider)**. It looks like:
+The login and account-creation screens use Supabase Google OAuth. New Google
+users enter the same pending approval flow as email/password users.
 
-    https://<project-ref>.supabase.co/auth/v1/callback
+## Staging project
 
-Use your staging project's URL for staging and the production project's URL for
-production. Also make sure **Authentication -> URL Configuration** lists your
-site URLs (staging Pages URL and https://atozvolleyball.com) under Redirect URLs.
+- Supabase project ref: `spevmuqdjxyyfzoosjdz`
+- Supabase callback URL:
+  `https://spevmuqdjxyyfzoosjdz.supabase.co/auth/v1/callback`
+- Application URL: `https://staging.a2z-volleyball.pages.dev`
 
-## 1. Google
-1. Go to https://console.cloud.google.com -> create (or pick) a project.
-2. APIs & Services -> OAuth consent screen: choose External, fill app name,
-   support email, and your domain; add scopes `email` and `profile`; publish.
-3. APIs & Services -> Credentials -> Create credentials -> OAuth client ID ->
-   Web application.
-   - Authorized JavaScript origins: your site URLs.
-   - Authorized redirect URIs: the Supabase callback URL above.
-4. Copy the Client ID and Client secret into Supabase -> Providers -> Google,
-   toggle Enabled, save.
+Staging does not currently have a Supabase custom domain or vanity subdomain.
+Until one is activated, Google can display `spevmuqdjxyyfzoosjdz.supabase.co`
+during sign-in. This hostname cannot be replaced by frontend code.
 
-## 2. Facebook
-1. Go to https://developers.facebook.com -> My Apps -> Create App -> type
-   "Consumer" (or "Authenticate and request data from users").
-2. Add the **Facebook Login** product -> Settings -> Valid OAuth Redirect URIs:
-   the Supabase callback URL.
-3. App settings -> Basic: copy App ID and App Secret into Supabase ->
-   Providers -> Facebook, enable, save.
-4. Switch the Facebook app from Development to Live mode (requires a privacy
-   policy URL) or only test users can log in.
+## Google Cloud
 
-## 3. Apple (recommended if many iPhone users)
-1. Requires a paid Apple Developer account (https://developer.apple.com).
-2. Certificates, Identifiers & Profiles -> Identifiers -> add an **App ID**,
-   then a **Services ID** (this becomes the client id); enable "Sign in with
-   Apple" on it and set the Supabase callback URL as the Return URL.
-3. Keys -> create a key with "Sign in with Apple" enabled; download the .p8.
-4. In Supabase -> Providers -> Apple enter the Services ID, Team ID, Key ID,
-   and the .p8 key contents; enable, save.
-5. Frontend: add an Apple button by duplicating a social button with
-   `data-provider="apple"` (the handler already accepts it).
+1. Open Google Cloud Console and choose the OAuth project.
+2. In Google Auth Platform, open Branding and set the staging app name to
+   `A to Z Volleyball Staging`, plus the support email, logo, homepage, and
+   privacy-policy URL. Google requires brand verification before the name and
+   logo replace the project identity for all users.
+3. Create a Web application OAuth client.
+4. Add `https://staging.a2z-volleyball.pages.dev` as an authorized JavaScript
+   origin.
+5. Add the Supabase callback URL above as an authorized redirect URI.
 
-## 4. Microsoft (Azure) — useful for school/club accounts
-1. https://portal.azure.com -> Microsoft Entra ID -> App registrations -> New.
-2. Supported account types: "Accounts in any organizational directory and
-   personal Microsoft accounts".
-3. Redirect URI (Web): the Supabase callback URL.
-4. Certificates & secrets -> New client secret; copy its Value immediately.
-5. Supabase -> Providers -> Azure: paste Application (client) ID and the
-   secret; enable, save. Frontend button: `data-provider="azure"` (add
-   "azure" to the allowed list in `signInWithProvider`).
+## Supabase
 
-## Notes
-- New social accounts follow the same approval flow: a pending profile is
-  created; an admin approves and links it to a coach/club before booking works.
-- Usernames are derived from the email prefix; collisions get `-1`, `-2`, ...
-- Do each provider twice: once with the staging Supabase project, once with
-  production (separate credentials per environment is cleanest).
+1. Open Authentication, then Providers, then Google.
+2. Enter the Google client ID and client secret.
+3. Turn Google on and save.
+4. Under Authentication, then URL Configuration, add
+   `https://staging.a2z-volleyball.pages.dev/**` to Redirect URLs.
+
+## Branded Auth Domain
+
+Google's `continue to ...` hostname comes from the Supabase Auth callback
+domain. To replace it, configure either a Supabase custom domain such as
+`auth-staging.a2z-volleyball.com` or a vanity subdomain, then:
+
+1. Add the new `https://<auth-domain>/auth/v1/callback` URI to the existing
+   Google OAuth web client before activating the domain.
+2. Activate the domain in Supabase.
+3. Change `VITE_SUPABASE_URL` in the matching Cloudflare Pages environment to
+   the new Auth domain.
+4. Rebuild, deploy, and run the complete Google sign-in flow.
+
+The current staging organization does not have the Custom Domain add-on, so a
+custom `a2z-volleyball.com` Auth hostname cannot be activated yet.
+
+## Production Launch Requirement
+
+Production must use a separate Google Cloud OAuth project and Supabase project.
+Before enabling production Google login:
+
+1. Set the verified Google app name to `A to Z Volleyball Center`.
+2. Configure the verified homepage, privacy policy, support email, and A2Z logo.
+3. Activate `auth.a2z-volleyball.com` (or the final approved Auth hostname).
+4. Add its Supabase callback URI to the production Google OAuth client.
+5. Point the production `VITE_SUPABASE_URL` to that branded Auth domain.
+6. Verify sign-up, pending approval, approval, login, and logout end to end.
+
+## Verification
+
+The public provider setting must return `google: true`, and the authorize
+endpoint must redirect to Google instead of returning HTTP 400:
+
+```bash
+curl -sS "https://spevmuqdjxyyfzoosjdz.supabase.co/auth/v1/settings" \
+  -H "apikey: <staging-anon-key>"
+```
+
+After provider setup, use both Google buttons:
+
+1. Log in with an existing Google-linked account.
+2. Create a new Google account and confirm it appears as pending in Admin.
+3. Approve the account, sign in again, and confirm scheduling is available.
+
+Do not put the Google client secret in this repository. Production needs its
+own Google provider setup and redirect allowlist when production login opens.

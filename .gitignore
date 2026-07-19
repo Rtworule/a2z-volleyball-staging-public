@@ -15,6 +15,7 @@ build/
 .env.*
 !.env.example
 !.env.*.example
+!.env.staging
 
 # Logs
 *.log
@@ -31,6 +32,3 @@ supabase/.temp/
 .DS_Store
 .idea/
 .vscode/
-
-# Build output
-/assets/

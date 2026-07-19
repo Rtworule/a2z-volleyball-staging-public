@@ -18,7 +18,7 @@ Expected output:
 
 ## Supabase Environment Safety
 
-- Keep the Supabase CLI linked to staging by default: `giciqacwootxxargvtjm`.
+- Keep the Supabase CLI linked to the real staging project by default: `spevmuqdjxyyfzoosjdz`.
 - Link to production only when R2 explicitly asks to update the production database, schema, or config.
 - Do not delete production data unless R2 confirms the exact destructive action after seeing: `ARE YOU SURE YOU WANT TO DELETE PRODUCTION DATA?`
 - After any required production database work, relink the CLI back to staging.
@@ -51,9 +51,14 @@ Required checks:
 
 ```bash
 curl -sS <deployed-url> | sed -n '1,80p'
+npm run smoke:staging
 ```
 
 - The deployed HTML must reference bundled `/assets/...` files, not source files like `./src/main.js`.
+- The deployed bundle must use Supabase staging project `spevmuqdjxyyfzoosjdz`.
+- Google OAuth must be enabled and its authorize request must redirect to `accounts.google.com`.
+- The legacy `staging-a2z-volleyball.pages.dev` URL must redirect to `staging.a2z-volleyball.pages.dev`.
+- The public facility RPC must return the expected staging configuration.
 - Open the deployed URL in a browser and verify visible page text renders.
 - Check that `#app` is not empty and the page is not a blank screen.
 - If the smoke test fails, fix or roll back before reporting completion.

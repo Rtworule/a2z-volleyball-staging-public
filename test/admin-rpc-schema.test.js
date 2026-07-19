@@ -9,6 +9,7 @@ const migration = readdirSync(migrationDir)
   .map((file) => readFileSync(new URL(file, migrationDir), "utf8"))
   .join("\n");
 const clientEnableMigration = readFileSync(new URL("../supabase/migrations/20260613194000_enable_clients_and_fix_subject_type.sql", import.meta.url), "utf8");
+const seasonPriceAliasFix = readFileSync(new URL("../supabase/migrations/20260718214500_fix_admin_team_season_price_alias.sql", import.meta.url), "utf8");
 const appSource = readFileSync(new URL("../src/app.js", import.meta.url), "utf8");
 
 const requiredRpcFunctions = [
@@ -131,6 +132,12 @@ test("admin RPCs enforce soft-delete and paid-state persistence in SQL", () => {
   assert.match(migration, /ADD COLUMN IF NOT EXISTS email_templates jsonb/);
   assert.match(migration, /'invoices', invoices_json/);
   assert.match(migration, /status IN \('previewed', 'scheduled'\)/);
+});
+
+test("team season price updates use unambiguous table and record names", () => {
+  assert.match(seasonPriceAliasFix, /UPDATE public\.team_season_prices AS target_price/);
+  assert.match(seasonPriceAliasFix, /RETURNING target_price\.\* INTO updated_price/);
+  assert.doesNotMatch(seasonPriceAliasFix, /UPDATE public\.team_season_prices price/);
 });
 
 test("admin UI and database access require approved admin profiles", () => {
