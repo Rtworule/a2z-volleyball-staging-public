@@ -145,6 +145,11 @@ const state = {
   bracketPrices: [],
   resetPasswordValue: "",
   editingReservationId: null,
+  rentalSport: "volleyball",
+  bookingsFilter: "all",
+  coachSearchQuery: "",
+  coachSearchResults: [],
+  subjectCoaches: [],
   durationMinutes: 120,
   resourceType: "court",
   selectedCourt: "court-3",
@@ -438,6 +443,9 @@ document.addEventListener("click", (event) => {
   if (target.dataset.adminTab && isAdminSession()) {
     state.adminTab = target.dataset.adminTab;
     render();
+    if (shouldUseLiveAuth()) {
+      loadAdminDashboard().then(() => render());
+    }
   }
 
   if (target.dataset.settingsTab && isAdminSession()) {
@@ -490,11 +498,74 @@ document.addEventListener("click", (event) => {
     if (target.dataset.gridCourt === "trainer") {
       state.resourceType = "trainer";
       state.selectedCourt = "";
+      const instructorContext = state.memberContexts.find((context) => context.type === "private");
+      if (instructorContext) {
+        state.bookingContextKey = instructorContext.key;
+      }
     } else {
       state.resourceType = "court";
       state.selectedCourt = target.dataset.gridCourt;
     }
     setView("book");
+  }
+
+  if (target.dataset.action === "coach-search") {
+    const query = state.coachSearchQuery.trim();
+    if (!query || !supabase) {
+      return;
+    }
+    supabase.rpc("admin_search_profiles", { p_query: query }).then(({ data, error }) => {
+      state.coachSearchResults = error ? [] : (data ?? []);
+      if (error) {
+        state.notice = readableSupabaseError(error, "Could not search profiles.");
+      }
+      render();
+    });
+    return;
+  }
+
+  if (target.dataset.action === "coach-add") {
+    if (!supabase) {
+      return;
+    }
+    supabase.rpc("admin_add_club_coach", {
+      payload: { subjectId: target.dataset.subject, profileId: target.dataset.profile }
+    }).then(async ({ error }) => {
+      if (error) {
+        state.notice = readableSupabaseError(error, "Could not add the coach.");
+      } else {
+        state.notice = "Coach added — they can now book for this club.";
+        state.coachSearchResults = [];
+        state.coachSearchQuery = "";
+        await loadSubjectCoaches(target.dataset.subject);
+      }
+      render();
+    });
+    return;
+  }
+
+  if (target.dataset.action === "coach-remove") {
+    if (!supabase || !window.confirm("Remove this coach? They will immediately lose booking access for this club.")) {
+      return;
+    }
+    supabase.rpc("admin_remove_club_coach", {
+      payload: { subjectId: target.dataset.subject, profileId: target.dataset.profile }
+    }).then(async ({ error }) => {
+      if (error) {
+        state.notice = readableSupabaseError(error, "Could not remove the coach.");
+      } else {
+        state.notice = "Coach removed.";
+        await loadSubjectCoaches(target.dataset.subject);
+      }
+      render();
+    });
+    return;
+  }
+
+  if (target.dataset.action === "bookings-filter") {
+    state.bookingsFilter = target.dataset.filter;
+    render();
+    return;
   }
 
   if (target.dataset.action === "approve") {
@@ -952,6 +1023,7 @@ function render() {
       ${state.view === "programs" ? renderProgramsView() : ""}
       ${state.view === "schedule" ? renderScheduleView() : ""}
       ${state.view === "book" ? renderBookingView() : ""}
+      ${state.view === "weight-room" ? renderWeightRoomView() : ""}
       ${state.view === "my-bookings" ? renderMyBookingsView() : ""}
       ${state.view === "admin" ? renderAdminView() : ""}
     </main>
@@ -989,8 +1061,8 @@ function renderTopbar() {
       <nav class="desktop-nav" aria-label="Primary">
         ${navButton("home", "Home")}
         ${navButton("programs", "Programs")}
-        ${isApprovedMember() ? navButton("schedule", "Schedule") : ""}
         ${isApprovedMember() ? navButton("book", "Reserve") : ""}
+        ${isApprovedMember() && state.memberContexts.some((context) => context.type === "private") ? navButton("weight-room", "Weight room") : ""}
         ${isApprovedMember() ? navButton("my-bookings", "My bookings") : ""}
         ${isAdminSession() ? navButton("admin", "Admin") : ""}
       </nav>
@@ -1108,7 +1180,7 @@ function renderHomeView() {
       </div>
     </section>
 
-    <section class="home-section booking-path">
+    ${isApprovedMember() ? "" : `<section class="home-section booking-path">
       <div class="booking-path-inner">
         <div class="booking-path-copy">
           <p class="eyebrow">A clear booking path</p>
@@ -1121,9 +1193,8 @@ function renderHomeView() {
           <div class="booking-step"><span>03</span><div><strong>Choose and reserve</strong><small>See live court times in 30-minute steps.</small></div><i class="ph-bold ph-calendar-check"></i></div>
         </div>
       </div>
-    </section>
-
-    <section class="home-section facility-home-section">
+    </section>`}
+    ${isApprovedMember() ? "" : `<section class="home-section facility-home-section">
       <div class="facility-home-grid">
         <div class="facility-map-panel">
           ${renderFacilityMap({ interactive: isApprovedMember() })}
@@ -1137,7 +1208,7 @@ function renderHomeView() {
           <button type="button" class="primary-action" data-view="signup">Request booking access</button>
         </div>
       </div>
-    </section>
+    </section>`}
   `;
 }
 
@@ -1271,6 +1342,11 @@ function renderProgramsView() {
 }
 
 function renderScheduleView() {
+  // Schedule and Reserve are one page now; keep the route as an alias.
+  return renderBookingView();
+}
+
+function renderScheduleViewLegacy() {
   if (!canViewScheduling()) {
     return "";
   }
@@ -1331,7 +1407,8 @@ function renderBookingView() {
     ? state.bracketPrices.find((price) => price.bracket === state.lessonBracket)
     : null;
   const bracketRate = bracketPrice ? (state.resourceType === "trainer" ? bracketPrice.gymHourlyRate : bracketPrice.courtHourlyRate) : null;
-  const estimatedRate = bracketRate ?? bookingSeasonPrice?.hourlyRate ?? (state.resourceType === "trainer" ? state.settings.pricing.gymHourlyRate : state.settings.pricing.courtHourlyRate);
+  const personalPickleball = memberContext?.type === "personal" && state.rentalSport === "pickleball";
+  const estimatedRate = bracketRate ?? bookingSeasonPrice?.hourlyRate ?? (state.resourceType === "trainer" ? state.settings.pricing.gymHourlyRate : personalPickleball ? (state.pickleballHourlyRate ?? state.settings.pricing.courtHourlyRate) : state.settings.pricing.courtHourlyRate);
   const estimatedDue = estimatedRate * (state.durationMinutes / 60);
 
   return `
@@ -1377,6 +1454,7 @@ function renderBookingView() {
             </label>
           ` : ""}
           ${state.editingReservationId ? `<p class="small-copy edit-banner">Editing your private lesson — adjust the details and confirm, or <button type="button" class="ghost-action" data-action="cancel-edit">keep it as is</button>.</p>` : ""}
+          ${!isAdminSession() && shouldUseLiveAuth() && state.memberContexts.some((context) => context.type === "private") ? `<p class="small-copy room-crosslink">Renting the weight room instead? <button type="button" class="ghost-action" data-view="weight-room">Open the weight room page →</button></p>` : ""}
           ${!isAdminSession() && shouldUseLiveAuth() ? renderMemberBookingContextFields() : ""}
           ${isAdminSession() ? `
             <label>
@@ -1423,6 +1501,71 @@ function renderBookingView() {
   `;
 }
 
+function renderWeightRoomView() {
+  if (!isApprovedMember()) {
+    return "";
+  }
+  const instructorContext = state.memberContexts.find((context) => context.type === "private");
+  if (!instructorContext) {
+    return `
+      <section class="workspace narrow-workspace">
+        <div class="workspace-head"><div><p class="eyebrow">Weight room</p><h2>Instructor rentals only</h2></div></div>
+        <p class="small-copy">The Weight Training &amp; Stretching Room is space &amp; equipment rental for instructors. Court rentals are open to all approved members on the Reserve page.</p>
+        <button type="button" class="primary-action" data-view="book">Go to Reserve</button>
+      </section>
+    `;
+  }
+  const slots = dayGridSlots();
+  const scheduler = buildScheduler();
+  const capacity = state.settings.trainerCapacity;
+  const rows = slots.map((slot) => {
+    const start = toIso(state.date, slot);
+    const end = toIso(state.date, addMinutes(slot, 30));
+    let availability;
+    try {
+      availability = scheduler.getAvailability({ start, end, viewer: state.user });
+    } catch {
+      availability = null;
+    }
+    const openSlots = availability?.trainer.availableSlots ?? 0;
+    const mine = state.myReservations.some((reservation) => reservation.resourceType === "trainer"
+      && reservation.status !== "cancelled"
+      && new Date(reservation.start) < new Date(end) && new Date(start) < new Date(reservation.end));
+    const pill = mine
+      ? `<span class="slot mine-pill">You</span>`
+      : openSlots > 0
+        ? `<button type="button" class="slot open-pill" data-grid-time="${slot}" data-grid-court="trainer">${openSlots} of ${capacity} open</button>`
+        : `<span class="slot full-pill">Full</span>`;
+    return `<tr><th scope="row">${formatTime(slot)}</th><td>${pill}</td></tr>`;
+  }).join("");
+  return `
+    <section class="workspace narrow-workspace weight-room-page">
+      <div class="workspace-head">
+        <div>
+          <p class="eyebrow">Weight Training &amp; Stretching Room</p>
+          <h2>Space &amp; equipment rental for instructors</h2>
+        </div>
+      </div>
+      <p class="small-copy">Up to ${capacity} instructors can rent the room at the same time — ${formatCurrency(state.settings.pricing.gymHourlyRate)}/hour, invoiced after your session. Booking as <strong>${escapeHtml(instructorContext.label)}</strong>.</p>
+      <div class="inline-controls">
+        <label>
+          Date
+          <input data-control="date" type="date" value="${state.date}">
+        </label>
+      </div>
+      ${slots.length ? `
+        <div class="day-grid-wrap">
+          <table class="day-grid weight-room-grid" aria-label="Weight room availability for ${formatDateLabel(state.date)}">
+            <thead><tr><th>Time</th><th>Room availability</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+        <p class="small-copy">Tap an open time to start a booking — courts stay on the <button type="button" class="ghost-action" data-view="book">Reserve page</button>.</p>
+      ` : `<p class="small-copy">The facility is closed on this date.</p>`}
+    </section>
+  `;
+}
+
 function renderMyBookingsView() {
   if (!isApprovedMember()) {
     return "";
@@ -1431,6 +1574,8 @@ function renderMyBookingsView() {
   if (shouldUseLiveAuth()) {
     const reservations = [...state.myReservations]
       .filter((reservation) => reservation.status !== "cancelled")
+      .filter((reservation) => state.bookingsFilter === "all"
+        || (state.bookingsFilter === "courts" ? reservation.resourceType === "court" : reservation.resourceType === "trainer"))
       .sort((a, b) => new Date(a.start) - new Date(b.start));
     return `
       <section class="workspace">
@@ -1440,6 +1585,9 @@ function renderMyBookingsView() {
             <h2>${reservations.length} reservation${reservations.length === 1 ? "" : "s"}</h2>
           </div>
         </div>
+        <div class="filter-chips" role="tablist" aria-label="Filter bookings">
+          ${[["all", "All"], ["courts", "Courts"], ["trainer", "Weight room"]].map(([key, label]) => `<button type="button" class="chip ${state.bookingsFilter === key ? "active" : ""}" data-action="bookings-filter" data-filter="${key}">${label}</button>`).join("")}
+        </div>
         <div class="stack-list">
           ${reservations.length ? reservations.map((reservation) => {
             const isFuture = new Date(reservation.start) > new Date();
@@ -1448,14 +1596,14 @@ function renderMyBookingsView() {
               <div class="list-row">
                 <span>
                   <strong>${reservation.resourceType === "court" ? `Court ${reservation.courtNumber}` : "Weight room"}</strong>
-                  <small>${formatShortDate(reservation.start)} ${formatShortTime(reservation.start)}-${formatShortTime(reservation.end)} · ${escapeHtml(reservation.teamName ?? "")}${reservation.lessonPlayerBracket ? ` · ${bracketLabel(reservation.lessonPlayerBracket)}` : ""}</small>
+                  <small>${formatShortDate(reservation.start)} ${formatShortTime(reservation.start)}-${formatShortTime(reservation.end)} · ${escapeHtml(reservation.teamName ?? "")}${reservation.lessonPlayerBracket ? ` · ${bracketLabel(reservation.lessonPlayerBracket)}` : reservation.rentalSport ? ` · ${reservation.rentalSport === "pickleball" ? "Pickleball" : "Volleyball"} rental` : ""}</small>
                 </span>
                 <span class="row-actions">
                   <span class="status-pill ${isPaid ? "is-open" : "is-due"}">${isPaid ? "paid" : "invoice due"}</span>
-                  ${reservation.lessonPlayerBracket && !isPaid && isFuture ? `
-                    ${isEditableWindow(reservation.start)
+                  ${(reservation.lessonPlayerBracket || reservation.rentalSport) && !isPaid && isFuture ? `
+                    ${reservation.lessonPlayerBracket ? (isEditableWindow(reservation.start)
                       ? `<button type="button" class="ghost-action" data-action="edit-reservation" data-reservation="${reservation.id}">Edit</button>`
-                      : `<small class="field-tip">Edits within 36h: front desk</small>`}
+                      : `<small class="field-tip">Edits within 36h: front desk</small>`) : ""}
                     <button type="button" class="ghost-action" data-action="cancel-reservation" data-reservation="${reservation.id}">Cancel${isEditableWindow(reservation.start) ? "" : ` (${cancellationFeePercentFor(reservation.start)}% fee)`}</button>
                   ` : reservation.lessonPlayerBracket ? ""
                     : isFuture ? `<small class="field-tip">Team practices: contact the front desk to change</small>` : ""}
@@ -1939,8 +2087,65 @@ function renderClientDetailPage() {
         <button type="button" class="primary-action compact" data-action="save-subject" data-subject="${subject.id}">Save Client</button>
       </div>
       ${hasTeams ? renderSubjectTeamsManager(subject) : ""}
+      ${hasTeams ? renderClubCoachesManager(subject) : ""}
     </article>
   `;
+}
+
+function renderClubCoachesManager(subject) {
+  return `
+    <div class="club-coaches-manager">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Club coaches</p>
+          <h3>User profiles who can book for ${escapeHtml(subject.displayName)}</h3>
+        </div>
+      </div>
+      <p class="small-copy">Coaches added here can sign in with their own account and reserve courts for this club's teams. Removing a coach immediately revokes that access.</p>
+      ${state.subjectCoaches.length ? `
+        <div class="stack-list">
+          ${state.subjectCoaches.map((coach) => `
+            <div class="list-row">
+              <span><strong>${escapeHtml(coach.displayName ?? coach.username)}</strong><small>${escapeHtml(coach.email ?? "")} · ${escapeHtml(coach.role)}</small></span>
+              <span class="row-actions">
+                <button type="button" class="ghost-action" data-action="coach-remove" data-subject="${subject.id}" data-profile="${coach.profileId}">Remove</button>
+              </span>
+            </div>
+          `).join("")}
+        </div>
+      ` : `<p class="small-copy">No coaches assigned yet.</p>`}
+      <div class="inline-controls coach-search-row">
+        <label>
+          Add a coach (search approved users)
+          <input data-control="coachSearchQuery" value="${escapeHtml(state.coachSearchQuery)}" placeholder="Name, username, or email">
+        </label>
+        <button type="button" class="secondary-action compact" data-action="coach-search" data-subject="${subject.id}">Search</button>
+      </div>
+      ${state.coachSearchResults.length ? `
+        <div class="stack-list coach-results">
+          ${state.coachSearchResults.map((profile) => `
+            <div class="list-row">
+              <span><strong>${escapeHtml(profile.displayName ?? profile.username)}</strong><small>${escapeHtml(profile.email ?? "")}</small></span>
+              <span class="row-actions">
+                ${state.subjectCoaches.some((coach) => coach.profileId === profile.id)
+                  ? `<small class="field-tip">Already a coach</small>`
+                  : `<button type="button" class="ghost-action" data-action="coach-add" data-subject="${subject.id}" data-profile="${profile.id}">Add as coach</button>`}
+              </span>
+            </div>
+          `).join("")}
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
+
+async function loadSubjectCoaches(subjectId) {
+  if (!shouldUseLiveAuth() || !supabase || !subjectId) {
+    state.subjectCoaches = [];
+    return;
+  }
+  const { data, error } = await supabase.rpc("admin_list_club_coaches", { p_subject_id: subjectId });
+  state.subjectCoaches = error ? [] : (data ?? []);
 }
 
 function renderSubjectTeamsManager(subject) {
@@ -2680,6 +2885,10 @@ function renderConfigurationSettings() {
           <input data-config="gymHourlyRate" type="number" min="0" step="1" value="${state.settings.pricing.gymHourlyRate}">
         </label>
         <label>
+          Pickleball hourly rate
+          <input data-config="pickleballHourlyRate" type="number" min="0" step="1" value="${state.settings.pricing.pickleballHourlyRate ?? state.settings.pricing.courtHourlyRate}">
+        </label>
+        <label>
           Courts
           <input data-config="courtCount" type="number" min="1" max="20" step="1" value="${state.settings.courtCount}">
         </label>
@@ -3066,7 +3275,6 @@ function renderMobileNav() {
   const buttons = [
     navButton("home", "Home"),
     navButton("programs", "Programs"),
-    isApprovedMember() ? navButton("schedule", "Schedule") : "",
     isApprovedMember() ? navButton("book", "Reserve") : "",
     isAdminSession() ? navButton("admin", "Admin") : "",
     !state.user ? navButton("login", "Log in") : ""
@@ -3270,10 +3478,30 @@ async function bookSelectedSlot(options = {}) {
   }
 
   if (shouldUseLiveAuth() && isApprovedMember()) {
-    const context = memberContextByKey(state.bookingContextKey);
+    const context = memberContextByKey(state.bookingContextKey) ?? state.memberContexts[0];
     if (!context) {
-      state.notice = "Your account is not linked to a club or coach profile yet. Please contact the front desk.";
+      state.notice = "We could not load your booking profile. Please refresh and try again.";
       render();
+      return;
+    }
+    if (context.type === "personal") {
+      const { error } = await supabase.rpc("member_create_personal_reservation", {
+        payload: {
+          courtId: state.selectedCourt,
+          startDate: state.date,
+          startTime: state.time,
+          durationMinutes: state.durationMinutes,
+          rentalSport: state.rentalSport
+        }
+      });
+      if (error) {
+        state.notice = readableSupabaseError(error, "Could not create the reservation.");
+        render();
+        return;
+      }
+      await loadMemberPortal();
+      state.notice = "Court reserved. The invoice will follow by email.";
+      setView("my-bookings");
       return;
     }
     const payload = {
@@ -3980,6 +4208,12 @@ function startEditSubject(subjectId) {
   }
 
   state.editingSubjectId = subject.id;
+  state.subjectCoaches = [];
+  state.coachSearchQuery = "";
+  state.coachSearchResults = [];
+  if (shouldUseLiveAuth()) {
+    loadSubjectCoaches(subject.id).then(() => render());
+  }
   state.editSubjectForm = {
     displayName: subject.displayName,
     shortName: clientShortName(subject),
@@ -7190,7 +7424,8 @@ function normalizeLiveSettings(settings) {
     emailTemplates: normalizeEmailTemplates(settings.emailTemplates ?? settings.email_templates, fallback.emailTemplates),
     pricing: {
       courtHourlyRate: Number(settings.pricing?.courtHourlyRate ?? fallback.pricing.courtHourlyRate),
-      gymHourlyRate: Number(settings.pricing?.gymHourlyRate ?? fallback.pricing.gymHourlyRate)
+      gymHourlyRate: Number(settings.pricing?.gymHourlyRate ?? fallback.pricing.gymHourlyRate),
+      pickleballHourlyRate: settings.pricing?.pickleballHourlyRate != null ? Number(settings.pricing.pickleballHourlyRate) : null
     },
     operatingHours: normalizeOperatingHours(settings.operatingHours, fallback.operatingHours),
     closures: (settings.closures ?? []).map(normalizeClosure),
@@ -7322,15 +7557,32 @@ function applyMemberPortal(data, startDate) {
     deleted: false
   }));
 
+  state.pickleballHourlyRate = data?.pickleballHourlyRate != null ? Number(data.pickleballHourlyRate) : null;
   state.memberContexts = [];
   (data?.contexts ?? []).forEach((context) => {
+    if (context.type === "personal") {
+      state.memberContexts.push({
+        key: "personal",
+        type: "personal",
+        subjectId: null,
+        teamId: null,
+        label: context.label ?? "Myself — court rental",
+        billingTerms: context.billingTerms ?? "card_on_file",
+        cardOnFile: Boolean(context.cardOnFile),
+        cardLast4: context.cardLast4 ?? null
+      });
+      return;
+    }
     if (context.isCoach) {
       state.memberContexts.push({
         key: `private:${context.subjectId}`,
         type: "private",
         subjectId: context.subjectId,
         teamId: null,
-        label: `Private lesson (${context.displayName})`
+        label: `Private lesson (${context.displayName})`,
+        billingTerms: context.billingTerms ?? "card_on_file",
+        cardOnFile: Boolean(context.cardOnFile),
+        cardLast4: context.cardLast4 ?? null
       });
       return;
     }
@@ -7383,7 +7635,7 @@ function bracketLabel(value) {
 
 function renderMemberBookingContextFields() {
   if (!state.memberContexts.length) {
-    return `<p class="small-copy">Your account is approved but not linked to a club or coach profile yet. Contact the front desk so reservations can be assigned correctly.</p>`;
+    return `<p class="small-copy">Loading your booking profile…</p>`;
   }
   const context = memberContextByKey(state.bookingContextKey);
   return `
@@ -7402,12 +7654,24 @@ function renderMemberBookingContextFields() {
       </label>
       ${renderPrivateBillingStatus(context)}
     ` : ""}
+    ${context?.type === "personal" ? `
+      <label>
+        Sport
+        <select data-control="rentalSport">
+          <option value="volleyball" ${state.rentalSport === "volleyball" ? "selected" : ""}>Volleyball</option>
+          <option value="pickleball" ${state.rentalSport === "pickleball" ? "selected" : ""}>Pickleball${state.pickleballHourlyRate ? ` — $${state.pickleballHourlyRate}/hr` : ""}</option>
+        </select>
+      </label>
+      <p class="small-copy">Court rentals run 1 to 4 hours. Other members' bookings show only as unavailable — your own times are marked "You".</p>
+      ${renderPrivateBillingStatus(context)}
+    ` : ""}
   `;
 }
 
 function privateBookingBlocked() {
-  const context = memberContextByKey(state.bookingContextKey);
-  return Boolean(context && context.type === "private" && context.billingTerms !== "monthly" && !context.cardOnFile);
+  const context = memberContextByKey(state.bookingContextKey) ?? state.memberContexts[0];
+  return Boolean(context && (context.type === "private" || context.type === "personal")
+    && context.billingTerms !== "monthly" && !context.cardOnFile);
 }
 
 function renderPrivateBillingStatus(context) {
@@ -7510,13 +7774,32 @@ function renderFacilityMap({ interactive = false } = {}) {
       ${availability ? `<text x="${x + width / 2}" y="${y + height / 2 + 22}" class="map-status">${courtClass(courtNumber).includes("open") ? "Open" : "Reserved"}</text>` : ""}
     </g>
   `;
-  const roomTile = (label, x, y, width, height, extra = "") => `
+  const wrapLabel = (label, maxChars) => {
+    const lines = [];
+    let line = "";
+    for (const word of String(label).split(" ")) {
+      if ((line + " " + word).trim().length > maxChars && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = (line + " " + word).trim();
+      }
+    }
+    if (line) lines.push(line);
+    return lines;
+  };
+  const roomTile = (label, x, y, width, height, extra = "") => {
+    const lines = wrapLabel(label, Math.max(8, Math.floor(width / 7.4)));
+    const lineHeight = 13;
+    const firstY = y + height / 2 - ((lines.length - 1) * lineHeight) / 2;
+    return `
     <g class="map-tile map-room">
       <rect x="${x}" y="${y}" width="${width}" height="${height}" rx="10"></rect>
-      <text x="${x + width / 2}" y="${y + height / 2}" class="map-label small">${label}</text>
+      <text x="${x + width / 2}" y="${firstY}" class="map-label small">${lines.map((entry, index) => `<tspan x="${x + width / 2}" ${index === 0 ? "" : `dy="${lineHeight}"`}>${entry}</tspan>`).join("")}</text>
       ${extra}
     </g>
   `;
+  };
 
   const leftColumn = [2, 3, 4, 5];
   const rightColumn = [6, 7, 8, 9];
@@ -7535,7 +7818,7 @@ function renderFacilityMap({ interactive = false } = {}) {
           <text x="110" y="155" class="map-label">Court 1</text>
           ${availability ? `<text x="110" y="181" class="map-status">${courtClass(1).includes("open") ? "Open" : "Reserved"}</text>` : ""}
         </g>
-        ${roomTile(`Weight Training & Stretching${trainerOpenSlots !== null ? ` · ${trainerOpenSlots} open` : ""}`, 16, 330, 188, 100)}
+        ${roomTile(`Weight Training & Stretching Room${trainerOpenSlots !== null ? ` · ${trainerOpenSlots} open` : ""}`, 16, 330, 188, 100)}
         ${roomTile("Lobby · Coffee bar", 16, 442, 188, 56)}
         ${roomTile("Office", 16, 510, 188, 38)}
         ${roomTile("Meeting room", 16, 560, 188, 38)}

@@ -141,3 +141,43 @@ test("Cloudflare staging branch builds with staging environment variables", asyn
   assert.match(buildSource, /branch === "staging" \? "staging" : "production"/);
   assert.match(buildSource, /await build\(\{ mode \}\)/);
 });
+
+test("personal court rentals: sport choice, 4h cap, privacy copy, personal RPC", () => {
+  assert.match(appSource, /member_create_personal_reservation/);
+  assert.match(appSource, /data-control="rentalSport"/);
+  assert.match(appSource, /marked "You"/);
+  assert.doesNotMatch(appSource, /not linked to a club or coach profile yet/);
+});
+
+test("weight room has its own page linked from Reserve", () => {
+  assert.match(appSource, /renderWeightRoomView/);
+  assert.match(appSource, /data-view="weight-room"/);
+  assert.match(appSource, /of \$\{capacity\} open/);
+});
+
+test("my bookings filters courts vs weight room", () => {
+  assert.match(appSource, /data-action="bookings-filter"/);
+  assert.match(appSource, /\["trainer", "Weight room"\]/);
+});
+
+test("schedule menu is merged into Reserve", () => {
+  assert.doesNotMatch(appSource, /navButton\("schedule", "Schedule"\)/);
+});
+
+test("facility map wraps long room labels", () => {
+  assert.match(appSource, /wrapLabel/);
+  assert.match(appSource, /tspan/);
+});
+
+test("onboarding sections hidden for approved members", () => {
+  assert.match(appSource, /isApprovedMember\(\) \? "" : `<section class="home-section booking-path">/);
+  assert.match(appSource, /isApprovedMember\(\) \? "" : `<section class="home-section facility-home-section">/);
+});
+
+test("admin manages club coaches and pickleball rate; tabs refresh data", () => {
+  assert.match(appSource, /admin_add_club_coach/);
+  assert.match(appSource, /admin_remove_club_coach/);
+  assert.match(appSource, /admin_search_profiles/);
+  assert.match(appSource, /data-config="pickleballHourlyRate"/);
+  assert.match(appSource, /loadAdminDashboard\(\)\.then\(\(\) => render\(\)\)/);
+});

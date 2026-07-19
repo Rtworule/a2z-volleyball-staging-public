@@ -2649,3 +2649,33 @@ h3,
     box-shadow: 6px 6px 0 #287db8;
   }
 }
+
+/* ===== Patch 16: personal rentals, weight room page, chips, coach manager ===== */
+.filter-chips { display: flex; gap: 8px; margin: 4px 0 14px; }
+.chip {
+  border: 1.5px solid var(--ink);
+  background: var(--panel);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font: 700 12.5px Inter, sans-serif;
+  cursor: pointer;
+}
+.chip.active { background: var(--ink); color: #fff; }
+
+.weight-room-grid td { text-align: left; padding: 8px 12px; }
+.slot.open-pill { background: #cdeed7; border: 1.5px solid #1e7a45; color: #14532d; cursor: pointer; }
+.slot.open-pill:hover { background: #1e7a45; color: #fff; }
+.slot.full-pill { background: #efe9dc; border: 1.5px solid #d9d2bf; color: #8d8468; }
+.slot.mine-pill { background: #e3effc; border: 1.5px solid #1e6bb0; color: #14477c; }
+.room-crosslink { margin: 2px 0 10px; }
+
+/* Availability grid: unmistakable states */
+.grid-cell.open { background: #cdeed7; border-color: #1e7a45; }
+.grid-cell.open:hover, .grid-cell.open:focus-visible { background: #1e7a45; }
+.grid-cell.busy { background: #efe9dc; border-color: #e3dcc9; }
+.grid-cell.mine { background: #e3effc; border-color: #1e6bb0; }
+
+.club-coaches-manager { margin-top: 26px; border-top: 2px solid var(--ink); padding-top: 18px; }
+.coach-search-row { align-items: end; gap: 12px; }
+.coach-results { margin-top: 10px; }
