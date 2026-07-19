@@ -132,3 +132,12 @@ test("staging hosts render the application while production stays coming soon", 
   assert.match(mainSource, /PRODUCTION_HOSTS\.has\(currentHost\)/);
   assert.doesNotMatch(mainSource, /!isLocalHost\s*\|\|/);
 });
+
+test("Cloudflare staging branch builds with staging environment variables", async () => {
+  const packageSource = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+  const buildSource = await readFile(new URL("../scripts/build-cloudflare.mjs", import.meta.url), "utf8");
+
+  assert.equal(packageSource.scripts.build, "node scripts/build-cloudflare.mjs");
+  assert.match(buildSource, /branch === "staging" \? "staging" : "production"/);
+  assert.match(buildSource, /await build\(\{ mode \}\)/);
+});

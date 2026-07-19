@@ -10,7 +10,7 @@
     "dev:staging": "vite --mode staging --host 127.0.0.1 --port 4173",
     "dev:production": "vite --mode production --host 127.0.0.1 --port 4173",
     "start": "npm run dev:local",
-    "build": "vite build",
+    "build": "node scripts/build-cloudflare.mjs",
     "build:local": "vite build --mode development",
     "build:staging": "vite build --mode staging",
     "build:production": "vite build --mode production",
