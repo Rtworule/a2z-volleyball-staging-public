@@ -57,7 +57,9 @@ npm run smoke:staging
 - The deployed HTML must reference bundled `/assets/...` files, not source files like `./src/main.js`.
 - The deployed bundle must use Supabase staging project `spevmuqdjxyyfzoosjdz`.
 - Google OAuth must be enabled and its authorize request must redirect to `accounts.google.com`.
-- The legacy `staging-a2z-volleyball.pages.dev` URL must redirect to `staging.a2z-volleyball.pages.dev`.
+- The original staging site must remain available at `staging.a2z-volleyball.pages.dev`.
+- The public staging mirror must remain available at `a2z-f5-stg.pages.dev`.
+- The retired `staging-a2z-volleyball.pages.dev` URL must not redirect to the original staging site.
 - The public facility RPC must return the expected staging configuration.
 - Open the deployed URL in a browser and verify visible page text renders.
 - Check that `#app` is not empty and the page is not a blank screen.
