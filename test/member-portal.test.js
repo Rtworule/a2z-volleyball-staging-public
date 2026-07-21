@@ -181,3 +181,14 @@ test("admin manages club coaches and pickleball rate; tabs refresh data", () => 
   assert.match(appSource, /data-config="pickleballHourlyRate"/);
   assert.match(appSource, /loadAdminDashboard\(\)\.then\(\(\) => render\(\)\)/);
 });
+
+test("club coach RPCs preserve non-coach memberships", async () => {
+  const migration = await readFile(
+    new URL("../supabase/migrations/20260719120000_personal_rentals_pickleball_club_coaches.sql", import.meta.url),
+    "utf8"
+  );
+
+  assert.match(migration, /membership\.membership_role <> 'coach'/);
+  assert.match(migration, /AND membership_role = 'coach'\s+RETURNING \* INTO membership/);
+  assert.match(migration, /AND m\.membership_role = 'coach'/);
+});

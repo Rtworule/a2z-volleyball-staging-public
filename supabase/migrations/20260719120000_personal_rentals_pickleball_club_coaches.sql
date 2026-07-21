@@ -363,6 +363,9 @@ BEGIN
     INSERT INTO public.subject_memberships (subject_id, profile_id, membership_role, status, can_book)
     VALUES (subject.id, target.id, 'coach', 'active', true)
     RETURNING * INTO membership;
+  ELSIF membership.membership_role <> 'coach' AND membership."Deleted" = 0 THEN
+    RAISE EXCEPTION 'Profile already has the % role for this client', membership.membership_role
+      USING ERRCODE = '22023';
   ELSE
     UPDATE public.subject_memberships
     SET membership_role = 'coach', status = 'active', can_book = true, "Deleted" = 0
@@ -392,6 +395,7 @@ BEGIN
   SET status = 'disabled', can_book = false, "Deleted" = 1
   WHERE subject_id = (payload->>'subjectId')::uuid
     AND profile_id = (payload->>'profileId')::uuid
+    AND membership_role = 'coach'
   RETURNING * INTO membership;
   IF membership.id IS NULL THEN
     RAISE EXCEPTION 'Coach assignment not found' USING ERRCODE = '22023';
@@ -415,7 +419,10 @@ AS $$
         'displayName', p.display_name, 'role', m.membership_role) ORDER BY p.username)
       FROM public.subject_memberships m
       JOIN public.profiles p ON p.id = m.profile_id
-      WHERE m.subject_id = p_subject_id AND m."Deleted" = 0 AND m.status = 'active'
+      WHERE m.subject_id = p_subject_id
+        AND m.membership_role = 'coach'
+        AND m."Deleted" = 0
+        AND m.status = 'active'
     ), '[]'::jsonb)
   END;
 $$;
